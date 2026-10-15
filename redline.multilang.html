@@ -1,0 +1,2775 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>레드라인</title>
+<style>
+:root{
+  --bg:#0b0b0d; --panel:#141416; --border:#3a1414; --red:#b3231c;
+  --red-dim:#5c1a17; --text:#d9d4c6; --dim:#8a8478; --coin:#c9a24a;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme: dark){:root{--bg:#0b0b0d;}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{
+  margin:0;min-height:100%;background:var(--bg);color:var(--text);
+  font-family:"Nanum Myeongjo","Batang",Georgia,serif;
+  line-height:1.7;
+}
+#app{max-width:920px;margin:0 auto;padding:24px 22px 52px;min-height:100vh}
+h1{font-size:1.6rem;letter-spacing:2px;color:var(--red);margin:0 0 4px;font-weight:700}
+h2{font-size:1.05rem;color:#e8e2d2;border-bottom:1px solid var(--border);padding-bottom:8px;margin:0 0 16px}
+.sub{color:var(--dim);font-size:.85rem;margin-bottom:24px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:20px;margin-bottom:16px}
+.narr{white-space:pre-line;font-size:1rem;margin-bottom:18px}
+.glitch{color:var(--red);font-family:monospace;letter-spacing:1px;text-shadow:0 0 6px rgba(179,35,28,.7);word-break:break-all;font-size:.8rem;opacity:.85}
+.rulewrap{font-size:.92rem;color:#c7c1b3}
+.rulewrap li{margin-bottom:10px}
+button{
+  display:block;width:100%;text-align:left;background:#1b1b1e;color:var(--text);
+  border:1px solid var(--border);padding:12px 14px;margin-bottom:10px;border-radius:2px;
+  font-family:inherit;font-size:.95rem;cursor:pointer;transition:border-color .15s,background .15s;
+}
+button:hover{border-color:var(--red);background:#201414}
+button:disabled{opacity:.35;cursor:not-allowed}
+button:focus-visible{outline:2px solid var(--red)}
+.row{display:flex;gap:10px}
+.row button{flex:1}
+.statbar{display:flex;justify-content:space-between;font-family:monospace;font-size:.82rem;color:var(--dim);margin-bottom:6px}
+.statgrid{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:10px}
+.statgrid input{width:56px;background:#1b1b1e;color:var(--text);border:1px solid var(--border);text-align:center;padding:6px;font-family:monospace}
+.hud{display:flex;justify-content:space-between;font-family:monospace;font-size:.78rem;color:var(--dim);border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:20px;flex-wrap:wrap;gap:6px}
+.hud b{color:var(--text)}
+.coin{color:var(--coin)}
+.tag{display:inline-block;font-size:.72rem;color:var(--dim);border:1px solid var(--border);padding:1px 6px;border-radius:2px;margin-right:6px}
+.roll{font-family:monospace;color:var(--red);font-weight:bold}
+.row .slot{flex:1}
+.redtxt{color:var(--red);font-weight:bold;text-shadow:0 0 6px rgba(179,35,28,.6)}
+.art{margin-bottom:14px;border:1px solid var(--border);border-radius:2px;overflow:hidden;background:#000;line-height:0}
+.art svg,.art canvas,.art img{display:block;width:100%;height:auto;image-rendering:pixelated;shape-rendering:crispEdges}
+button small{color:var(--dim);font-size:.72rem}
+.slot{border:1px dashed var(--border);padding:8px 10px;font-size:.82rem;color:var(--dim);border-radius:2px;line-height:1.5}
+.slot.filled{border-style:solid;color:var(--text)}
+.slot.filled span{color:var(--dim);font-size:.75rem}
+.ok{color:#7fae7f}.bad{color:var(--red)}
+
+/* 도트 일러스트만 추가하고 원래 UI 배치는 유지 */
+.scene-visual{position:relative;margin:0 0 16px;overflow:hidden;border:1px solid #49302a;background:#000;line-height:0;box-shadow:0 12px 32px #0007}
+.scene-visual canvas,.scene-visual img,.pixel-art canvas,.pixel-art img{display:block;width:100%;height:auto;image-rendering:pixelated}
+.scene-visual figcaption{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;gap:10px;padding:8px 12px;background:linear-gradient(90deg,#0b0b0de8,#0b0b0db0);color:#aaa092;font:11px monospace;letter-spacing:.04em}
+.scene-visual figcaption strong{color:#e3d8c6;font:inherit}
+.narr{font-size:1.02rem;line-height:1.9;padding:22px 24px;background:#131316;border-color:#4a2825}
+button{min-height:44px;transition:background .15s,border-color .15s,transform .15s}
+button:hover{transform:translateY(-1px)}
+@media(max-width:640px){#app{padding:16px 12px 44px}.hud{font-size:.7rem}.scene-visual{margin-bottom:12px}.scene-visual figcaption{padding:6px 8px;font-size:9px}.narr{padding:18px;font-size:.98rem}.row{flex-wrap:wrap}.row button{min-width:calc(50% - 5px)}}
+html[lang="en"] .statgrid>div:first-child{min-width:0;overflow-wrap:anywhere}
+@media(max-width:640px){html[lang="en"] .statgrid{grid-template-columns:minmax(0,1fr) auto}html[lang="en"] .statgrid>div:first-child{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const $=id=>document.getElementById(id);
+const app=$('app');
+const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=arr=>arr[rand(0,arr.length-1)];
+const shuffle=arr=>{const a=[...arr];for(let i=a.length-1;i>0;i--){const j=rand(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+const S={
+  name:'', points:20, stats:{observe:0,hearing:0,mind:0,instinct:0},
+  bonus:{observe:0,hearing:0,mind:0,instinct:0},
+  slots:1, items:[], coins:0, day:1,
+  candyCharges:0, talisman:false,
+  screen:'start', houses:[], hIndex:0, hoursLeft:7, checksThisHouse:0, usedStats:[], notice:'', restNotice:'', fortuneHint:'', _history:{},
+};
+
+const LV=k=>Math.floor((S.stats[k]+S.bonus[k])/2)+(k==='mind'?(S.mindMax||0):0);
+function maxChecks(){ return 3+(S.items&&S.items.some(i=>i.id==='inju')?1:0); }
+const josa=(n,a,b)=>{const c=(n||'').charCodeAt((n||'').length-1);return (c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28!==0)?a:b;};
+function totalMind(){return Math.max(0, LV('mind') - (S._mindLoss||0));}
+
+const DRAWER_ITEMS=[
+  {id:'flash',name:'손전등',desc:'관찰력 +2. 어둠을 조금 걷어내준다.',stat:'observe',val:2},
+  {id:'candy',name:'사탕',desc:'사용 시 정신력 +1. 달달한 맛은 두려움을 잠시 잊게 한다. (1회용)',stat:null,val:0,consumable:'candy'},
+  {id:'aid',name:'보청기',desc:'듣기 +2. 반고리관의 친구.',stat:'hearing',val:2},
+  {id:'clover',name:'네잎클로버',desc:'직감 +2. 행운이라는 것도 결국 비과학적인 거다.',stat:'instinct',val:2},
+];
+const SHOP_ITEMS=[
+  {id:'kkokdu',name:'꼭두',cost:10,minDay:5,desc:'잘못 된 판단으로 인한 정신력 피해 감면 (2회). 나무로 깍은 작은 사람이다.',stat:null,val:0,consumable:'kkokdu',charges:2},
+  {id:'bead',name:'구슬',cost:8,minDay:5,desc:'낮은 확률(15%)로 주화 획득시 획득량이 2배가 된다. 옥으로 된 구슬이다.',stat:null,val:0,consumable:'bead'},
+  {id:'ring',name:'반지',cost:10,minDay:5,desc:'직감 +5. 매우 작은 금반지다.',stat:'instinct',val:5},
+  {id:'inju',name:'인주',cost:8,minDay:10,desc:'무언가에 눈에 띄는 흔적을 내기 좋다. 사용시 판정 횟수+1.',stat:null,val:0,consumable:'inju'},
+  {id:'gokok',name:'곡옥',cost:12,minDay:10,desc:'조금 흠집이 났지만 아직은 쓸만하다. 정신력 최대치+1.',stat:null,val:0,mindMax:1},
+  {id:'bell',name:'방울',cost:3,desc:'직감 +4. 소름이 끼칠 때마다 소리를 낸다.',stat:'instinct',val:4},
+  {id:'lens',name:'렌즈',cost:3,desc:'관찰력 +4. 몽골인의 시야가 이런 것일까.',stat:'observe',val:4},
+  {id:'earring',name:'걸이',cost:3,desc:'듣기 +4. 귀에 걸면 귀걸이가 된다.',stat:'hearing',val:4},
+  {id:'fortune',name:'뽑기',cost:3,desc:'오늘의 운세를 알려준다. 간혹 피해야 할 것을 알려주기도 한다.',stat:null,val:0,consumable:'fortune'},
+];
+
+const FLAVOR_BANK=[
+  {t:'observe',text:'창문 안쪽으로 푸른 불빛이 깜빡인다.',
+    normalOk:'TV 불빛이다. 소파에 누군가 잠든 실루엣이 보이지만 그저 평범한 거실이다.',
+    anomOk:'불빛이 아니라 불덩이다. 바라볼수록 점점 커져가는 것 같다.',
+    anomDeep:'불덩이 속에서 무언가가 이쪽을 마주 보고 있다.'},
+  {t:'observe',text:'베란다에 빨래가 널려 있다. 무언가 흔들리는 것 같다.',
+    normalOk:'젖은 셔츠와 수건이 바람에 흔들릴 뿐이다. 이상한 점은 없다.',
+    anomOk:'옷가지 사이로 사람 팔 같은 것이 섞여 흔들리고 있다.',
+    anomDeep:'그 팔의 손가락이 당신을 향해 까딱인다.'},
+  {t:'observe',text:'창문 안에 사람 형체가 서 있는 것 같다.',
+    normalOk:'다시 보니 옷걸이에 걸린 외투일 뿐이다.',
+    anomOk:'형체가 당신이 움직일 때마다 계속 이쪽을 향해 있다.',
+    anomDeep:'다시 보니 그 형체의 얼굴에는 눈이 없다.'},
+  {t:'observe',text:'마당에 그림자가 길게 드리워 있다.',
+    normalOk:'가로등 방향 그대로, 자연스러운 그림자다.',
+    anomOk:'그림자가 가로등 방향과 반대로 누워 있다.',
+    anomDeep:'그림자의 끝이 천천히 당신 쪽으로 길어진다.'},
+  {t:'hearing',text:'집 안에서 희미한 소리가 새어 나온다.',
+    normalOk:'귀를 기울이니 늦은 예능 재방송 소리다. 이상 없다.',
+    anomOk:'소리를 가만히 들어보니 낮은 신음처럼 들린다.',
+    anomDeep:'신음 사이로 당신의 이름이 섞여 들린다.'},
+  {t:'hearing',text:'2층에서 규칙적인 소리가 들려온다.',
+    normalOk:'코 고는 소리다. 평범한 밤이다.',
+    anomOk:'일정한 간격으로 벽을 두드리는 소리다.',
+    anomDeep:'두드리는 소리가 점점 문 쪽으로 가까워진다.'},
+  {t:'hearing',text:'초인종 쪽에서 작은 소리가 난다.',
+    normalOk:'바람에 초인종 덮개가 흔들리는 소리였다.',
+    anomOk:'누른 사람도 없는데 초인종이 안쪽에서 저절로 울린다.',
+    anomDeep:'초인종 소리 사이사이에 낮은 웃음소리가 섞여 있다.'},
+  {t:'hearing',text:'집 안에서 무언가 끄는 소리가 들린다.',
+    normalOk:'의자를 끄는 소리다. 누군가 아직 깨어 있을 뿐이다.',
+    anomOk:'소리가 천장을 따라 문 쪽으로 서서히 다가온다.',
+    anomDeep:'문 너머에서 숨소리가 들린다. 바로 문 뒤다.'},
+  {t:'instinct',text:'이 집 앞에 서자 어쩐지 마음이 가라앉는다.',
+    normalOk:'그저 늦은 밤의 고요함이다. 불길한 기운은 느껴지지 않는다.',
+    anomOk:'가라앉는 게 아니라 짓눌리는 느낌에 가깝다.',
+    anomDeep:'누군가 당신을 아래에서 올려다보고 있다는 확신이 든다.'},
+  {t:'instinct',text:'집 앞을 지나는데 묘하게 신경이 쓰인다.',
+    normalOk:'곰곰이 짚어봐도 위험한 느낌은 없다. 기분 탓이었다.',
+    anomOk:'설명할 수는 없지만 틀림없다. 무언가 잘못됐다.',
+    anomDeep:'누군가 당신의 이름을 알고 있다는 확신이 든다.'},
+  {t:'instinct',text:'갑자기 등골이 서늘해진다.',
+    normalOk:'밤바람이 차가울 뿐이다. 별일 아니다.',
+    anomOk:'숨이 하얗게 나올 만큼 온도가 뚝 떨어진다.',
+    anomDeep:'오한이 뼛속까지 스민다. 이 집은 당신이 온 것을 알고 있다.'},
+  {t:'instinct',text:'이 집 앞에서 발걸음이 느려진다.',
+    normalOk:'단지 피곤해서다. 깊게 생각할 것 없다.',
+    anomOk:'발이 떨어지지 않는다. 무언가 당신을 붙잡는 느낌이다.',
+    anomDeep:'발밑에서 희미하게 숨소리가 느껴진다.'},
+];
+const MISS_TEXT={observe:'눈을 크게 뜨고 살펴봐도 알 수 있는 것이 없다.',hearing:'귀를 기울여도 알 수 있는 것이 없다.',instinct:'느낌을 짚어보려 해도 아무것도 잡히지 않는다.'};
+const DAY_CFG={
+  2:{a:2,b:4,dc:13,midnight:'자정. 다시 붉은 선 도구를 쥔다. 어제와 같은 길, 그러나 오늘은 무언가 다르다는 예감이 든다.'},
+  3:{a:3,b:4,dc:14,midnight:'자정. 붉은 선 도구를 쥔다. 사흘째 밤. 골목이 어제보다 조금 더 길어진 것 같다.'},
+  5:{a:4,b:5,dc:17,midnight:'자정. 붉은 선 도구를 쥔다. 닷새째 밤.'},
+  4:{a:3,b:5,dc:15,noKim:true,midnight:'자정. 붉은 선 도구를 쥔다. 나흘째 밤. 골목이 유난히 조용하다.'},
+  6:{a:4,b:6,dc:18,midnight:'자정. 붉은 선 도구를 쥔다. 엿새째 밤. 이제는 이 길도 눈감고 걸을 수 있을 것 같다.'},
+  7:{a:3,b:5,dc:16,midnight:'자정. 붉은 선 도구를 쥔다. 이레째 밤. 왠지 발걸음이 가볍다.'},
+  8:{a:4,b:6,dc:18,noKim:true,midnight:'자정. 붉은 선 도구를 쥔다. 여드레째 밤.'},
+  9:{a:0,b:0,dc:16},
+  10:{a:4,b:6,dc:18,midnight:'자정. 붉은 선 도구를 쥔다. 열흘째 밤.'},
+  11:{a:4,b:6,dc:19,midnight:'자정. 붉은 선 도구를 쥔다. 열하루째 밤.'},
+  12:{a:4,b:6,dc:19,midnight:'자정. 붉은 선 도구를 쥔다. 열이틀째 밤.'},
+  13:{a:4,b:6,dc:20,midnight:'자정. 붉은 선 도구를 쥔다. 열사흘째 밤.'},
+};
+const DAY_RULES={
+  2:{intro:'남동쪽 순찰실 문 밑으로 종이 한 장이 밀어 넣어져 있었다.',rules:[
+    '창문에 김이 서린 집은 반드시 두 번 이상 확인할 것.',
+    '개가 짖지 않는 구간은 특히 주의할 것.']},
+  3:{intro:'순찰실 책상 위에 수칙서가 놓여 있었다. 어제와 달리 종이가 눅눅했다.',rules:[
+    '순찰 중 누군가 당신의 이름을 부르면 돌아보지 말 것. 목소리가 낯익더라도 마찬가지다.',
+    '순찰실 창문은 열어두지 말 것. 이미 열려 있다면 닫되, 누가 열었는지는 생각하지 말 것.',
+    '두 번째 집부터 발소리가 하나 더 늘어날 수 있다. 당신의 것이 아니라면 걸음을 맞추지 말 것.',
+    '불이 켜진 집이 반드시 사람이 있는 집은 아니다.']},
+  4:{intro:'순찰실 문 앞에 수칙서가 놓여 있었다. 종이 귀퉁이가 그을린 듯 검게 말려 있었다.',rules:[
+    '순찰실의 위치는 계약서에 적힌 그대로다. 오늘은 그 문장을 한 번 더 읽어둘 것.',
+    '정전이 되더라도 전등을 다시 켜려 하지 말 것. 스스로 돌아올 때까지 기다릴 것.',
+    '누군가 당신이 무엇을 봤는지 묻더라도 대답하지 말 것.',
+    '오늘 밤은 다른 날보다 짧게 느껴질 수 있다. 시계를 너무 믿지 말 것.']},
+  5:{intro:'순찰실 책상 위에 수칙서가 놓여 있었다.',dense:'기본 수칙을 다시 숙지하기실 바랍니다.',rules:[]},
+  6:{intro:'순찰실 문틈으로 수칙서 한 장이 밀어 넣어져 있었다. 글씨체가 어제와 미묘하게 다르다.',rules:[
+    '오늘 순찰실 근처에서 낯익은 얼굴을 마주치더라도 크게 동요하지 말 것.',
+    '순찰실의 비품은 원래 있던 자리, 원래 있던 상태 그대로 둘 것을 권장한다.',
+    '무언가에 이름을 적어 넣게 되는 상황이 온다면, 반드시 본인의 이름만을 적을 것.',
+    '오늘 하루가 유난히 길게 느껴지더라도 놀라지 말 것.']},
+  7:{intro:'어째서인지 수칙서 위에 신문이 놓여 있다.\n\n「45세의 중년 남성, 오늘 새벽 자택에서 의문사...」',plain:'오늘은 행운의 날입니다. 추가 수칙은 없습니다.',rules:[]},
+  8:{intro:'순찰실 책상 위에 수칙서가 놓여 있었다.',rules:['평소 보는 사람을 조심하세요.']},
+  10:{intro:'순찰실 책상 위에 수칙서가 놓여 있었다.',noRange:true,rules:['당신은 수칙서를 어기고 있습니다.','아직 글을 읽을 수 있다면 지금이라도 캐비닛을 여십시오']},
+  11:{intro:'순찰실 책상 위에 수칙서가 놓여 있었다.',rules:['집 뒤편은 순찰 경로가 아닙니다.','낯선 이가 건네는 물건은 받지 마십시오.']},
+  12:{intro:'순찰실 책상 위에 수칙서가 놓여 있었다.',rules:['오늘도 평소처럼 순찰하십시오.']},
+  13:{intro:'순찰실 책상 위에 수칙서가 놓여 있었다.',plain:'오늘은 마지막 근무일입니다. 추가 수칙은 없습니다.',rules:[]},
+};
+function contractCardHTML(mode){
+  if(mode==='only8'){
+    return `<div class="card rulewrap"><ol start="8"><li>이 다음 수칙은 무시하십시오.</li></ol></div>`;
+  }
+  if(mode==='secret'){
+    const t=CONTRACT_LINES[1];
+    return `<div class="card rulewrap"><ol>${Array(8).fill('<li>'+t+'</li>').join('')}</ol></div>`;
+  }
+  const corrupted=!!mode;
+  const same='이 다음 수칙은 무시하십시오.';
+  const li=n=>corrupted && n<=7 ? same : CONTRACT_LINES[n];
+  return `<div class="card rulewrap">
+      <ol>
+        <li>${li(1)}</li>
+        <li>${li(2)}</li>
+        <li>${li(3)}</li>
+        <li>${li(4)}</li>
+        <li>${li(5)}</li>
+        <li>${li(6)}</li>
+        <li>${li(7)}</li>
+        <li>이 다음 수칙은 무시하십시오.</li>
+      </ol>
+      <div class="glitch">444444444444444444444444444444444444444444444444444444444444444</div>
+      <ol start="10">
+        <li>간혹 이름이 두 글자인 사내가 개인 정비 시간에 나타나 물건을 팔 것입니다. 그의 물건은 도움이 될 것입니다.</li>
+      </ol>
+    </div>`;
+}
+const CONTRACT_LINES={
+  1:'귀하는 본 계약의 내용 및 업무 상태를 타인 혹은 타 기관에게 자의적 혹은 타의적으로 발설해서는 안 됩니다.',
+  2:'순찰 시간 동안 귀하는 단지 내 순찰실을 제약 없이 사용할 권한을 보유합니다. 순찰실은 남동쪽, 북서쪽 두 곳뿐입니다. <u>북동쪽 순찰실은 없다는 걸 기억하십시오.</u>',
+  3:'순찰경로는 남동 → 북서, 남동쪽 순찰실에서 출발해 북서쪽 순찰실로 복귀하는 것을 한 로테이션으로 봅니다.',
+  4:'이상현상은 00:00시부터 일어납니다. 23:00~00:00는 개인 정비 시간입니다.',
+  5:'장비보관소에는 2개의 서랍 당 하나의 도구가 있습니다. 그중 하나를 고르십시오.',
+  6:'이상현상 발견 시 절대 들어가지 말고, 현관문 앞에 레드라인을 치십시오.',
+  7:'매일 남동쪽 순찰실로 그날의 추가 수칙서가 배달됩니다. 숙지 후 순찰에 임하십시오.',
+};
+const CONTRACT_CARD=contractCardHTML(false);
+const CHECK_LABEL={observe:'관찰력',hearing:'듣기',instinct:'직감',mind:'정신력'};
+
+const ART_TITLE=`<div class="art cover-art" role="img" aria-label="붉은 선이 그어진 심야 골목 일러스트"><svg viewBox="0 0 1200 430" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="coverSky" x2="0" y2="1"><stop stop-color="#101720"/><stop offset="1" stop-color="#231519"/></linearGradient><linearGradient id="coverRoad" x2="0" y2="1"><stop stop-color="#2a2424"/><stop offset="1" stop-color="#08090b"/></linearGradient><radialGradient id="coverMoon"><stop stop-color="#d5b987" stop-opacity=".45"/><stop offset="1" stop-color="#d5b987" stop-opacity="0"/></radialGradient></defs>
+<rect width="1200" height="430" fill="url(#coverSky)"/><circle cx="965" cy="88" r="110" fill="url(#coverMoon)"/><circle cx="965" cy="88" r="34" fill="#b5a17b" opacity=".62"/>
+<path d="M0 250V110L130 65 245 109V240H320V140L454 91 565 126V250H660V104L790 52 914 99V245H1012V142L1120 100 1200 132V275Z" fill="#121519"/>
+<path d="M0 206L132 164 245 190V293H0ZM320 213L450 158 565 194V294H320ZM660 204L790 142 914 187V293H660ZM1012 222L1114 171 1200 196V301H1012Z" fill="#191a1d" stroke="#302425" stroke-width="4"/>
+<g fill="#a94d37" opacity=".52"><rect x="70" y="225" width="21" height="33"/><rect x="178" y="214" width="18" height="32"/><rect x="374" y="231" width="20" height="34"/><rect x="489" y="211" width="18" height="33"/><rect x="716" y="207" width="20" height="35"/><rect x="835" y="215" width="18" height="32"/><rect x="1051" y="235" width="19" height="31"/></g>
+<path d="M0 430V300Q290 252 600 264Q890 251 1200 300V430Z" fill="url(#coverRoad)"/><path d="M0 374Q276 332 454 338M770 338Q972 332 1200 378" fill="none" stroke="#b3231c" stroke-width="5"/><path d="M592 430L600 278 612 430" fill="#d8cdb0" opacity=".13"/>
+<path d="M147 300V151M130 151H165" stroke="#393437" stroke-width="9"/><path d="M125 151Q147 120 170 151" fill="#b3231c" opacity=".36"/><circle cx="147" cy="154" r="9" fill="#e3ad62"/>
+<g transform="translate(865 172)" fill="#050607"><path d="M35 172Q22 119 34 73L32 32Q34 7 58 7Q82 9 83 34L78 79Q96 124 86 172Z"/><path d="M41 58L9 116M77 57L112 116M43 168L30 225M78 168L96 225" fill="none" stroke="#050607" stroke-width="18" stroke-linecap="round"/><ellipse cx="57" cy="17" rx="25" ry="28"/></g>
+<path d="M879 250L892 250" stroke="#b3231c" stroke-width="3" opacity=".8"/>
+<path d="M0 286Q245 248 414 270M804 270Q1005 246 1200 287" fill="none" stroke="#e8dfcc" stroke-opacity=".07" stroke-width="26"/>
+</svg></div>`;
+
+const ART_NE=`<div class="art"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="300" height="150" fill="#0b0b0d"/>
+<rect x="85" y="28" width="130" height="112" fill="#141416" stroke="#3a1414" stroke-width="2"/>
+<text x="150" y="20" text-anchor="middle" fill="#8a8478" font-size="10" font-family="monospace">순찰실</text>
+<rect x="128" y="55" width="44" height="40" fill="#b3231c" opacity=".3"/>
+<rect x="128" y="55" width="44" height="40" fill="none" stroke="#b3231c" stroke-width="2"/>
+<rect x="140" y="112" width="20" height="28" fill="#1b1b1e"/>
+</svg></div>`;
+
+const ART_DOORS=`<div class="art"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="300" height="150" fill="#0b0b0d"/>
+<rect x="55" y="20" width="75" height="120" fill="#1b1b1e" stroke="#3a1414" stroke-width="2"/>
+<circle cx="118" cy="80" r="3" fill="#8a8478"/>
+<rect x="170" y="20" width="75" height="120" fill="#141416" stroke="#b3231c" stroke-width="2"/>
+<circle cx="180" cy="80" r="3" fill="#b3231c"/>
+</svg></div>`;
+
+const ART_MADNESS=`<div class="art"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="300" height="150" fill="#0b0b0d"/>
+<circle cx="150" cy="75" r="42" fill="none" stroke="#b3231c" stroke-width="2" opacity=".8"/>
+<path d="M150 33 L150 117 M108 75 L192 75 M121 46 L179 104 M179 46 L121 104" stroke="#b3231c" stroke-width="1" opacity=".5"/>
+<circle cx="150" cy="75" r="7" fill="#b3231c"/>
+</svg></div>`;
+
+const ART_REDLINE_END=`<div class="art"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="300" height="150" fill="#0b0b0d"/>
+<rect x="110" y="18" width="80" height="122" fill="#1b1b1e" stroke="#3a1414" stroke-width="2"/>
+<circle cx="178" cy="80" r="3" fill="#8a8478"/>
+<line x1="98" y1="28" x2="212" y2="130" stroke="#b3231c" stroke-width="4"/>
+</svg></div>`;
+
+const ART_ENDING3=`<div class="art"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="300" height="150" fill="#0b0b0d"/>
+<rect y="118" width="300" height="32" fill="#141416"/>
+<rect x="20" y="30" width="70" height="100" fill="#1b1b1e" stroke="#3a1414" stroke-width="2"/>
+<rect x="34" y="42" width="42" height="88" fill="#2a1414"/>
+<line x1="10" y1="134" x2="120" y2="134" stroke="#b3231c" stroke-width="3"/>
+<path d="M190 60 L208 60 L216 122 L182 122 Z" fill="#000" stroke="#b3231c" stroke-opacity=".35"/>
+<circle cx="199" cy="48" r="9" fill="#000" stroke="#b3231c" stroke-opacity=".35"/>
+<line x1="256" y1="122" x2="256" y2="70" stroke="#3a1414" stroke-width="3"/>
+<circle cx="256" cy="64" r="8" fill="#b3231c" opacity=".35"/>
+<circle cx="256" cy="64" r="3" fill="#e3a94a"/>
+</svg></div>`;
+
+const ART_TRUE1=`<div class="art"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="300" height="150" fill="#0b0b0d"/>
+<rect x="108" y="12" width="84" height="126" rx="9" fill="#1b1b1e" stroke="#5a4a3a" stroke-width="2"/>
+<rect x="118" y="26" width="64" height="8" fill="#8a8478" opacity=".7"/>
+<rect x="118" y="42" width="52" height="5" fill="#8a8478" opacity=".5"/>
+<rect x="118" y="53" width="58" height="5" fill="#8a8478" opacity=".5"/>
+<rect x="118" y="64" width="44" height="5" fill="#8a8478" opacity=".5"/>
+<rect x="118" y="86" width="64" height="26" fill="#2a2a2e"/>
+<rect x="124" y="94" width="40" height="5" fill="#e3a94a" opacity=".7"/>
+<rect x="124" y="103" width="26" height="4" fill="#e3a94a" opacity=".4"/>
+</svg></div>`;
+
+const ART_ENDING5=`<div class="art"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="300" height="150" fill="#0b0b0d"/>
+<path d="M120 50 L180 50 L260 150 L40 150 Z" fill="#141416"/>
+<path d="M150 56 V70 M150 82 V104 M150 116 V150" stroke="#3a3a3e" stroke-width="3"/>
+<line x1="118" y1="50" x2="182" y2="50" stroke="#b3231c" stroke-width="3"/>
+<path d="M238 118 L246 80 L258 80 L262 118 Z" fill="#000" stroke="#b3231c" stroke-opacity=".35"/>
+<circle cx="252" cy="72" r="7" fill="#000" stroke="#b3231c" stroke-opacity=".35"/>
+<ellipse cx="234" cy="112" rx="12" ry="9" fill="#000" stroke="#b3231c" stroke-opacity=".35"/>
+</svg></div>`;
+
+const ART_TRUE2=`<div class="art"><svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="300" height="150" fill="#0b0b0d"/>
+<circle cx="236" cy="42" r="26" fill="#e3a94a" opacity=".3"/>
+<circle cx="236" cy="42" r="12" fill="#e3a94a" opacity=".75"/>
+<rect y="118" width="300" height="32" fill="#141416"/>
+<rect x="110" y="26" width="80" height="102" fill="#1b1b1e" stroke="#5a4a3a" stroke-width="2"/>
+<circle cx="178" cy="80" r="3" fill="#8a8478"/>
+</svg></div>`;
+
+const ART_DAWN=`<div class="art"><svg viewBox="0 0 400 150" xmlns="http://www.w3.org/2000/svg">
+<rect width="400" height="150" fill="#0b0b0d"/>
+<circle cx="200" cy="118" r="52" fill="#8a4a2a" opacity=".45"/>
+<rect y="110" width="400" height="40" fill="#141416"/>
+<rect x="40" y="85" width="55" height="45" fill="#1b1b1e"/>
+<rect x="150" y="75" width="65" height="55" fill="#1b1b1e"/>
+<rect x="260" y="88" width="50" height="42" fill="#1b1b1e"/>
+<rect x="330" y="95" width="45" height="35" fill="#1b1b1e"/>
+</svg></div>`;
+
+function drawPixelScene(canvas,key){
+  const ctx=canvas.getContext('2d');if(!ctx)return;
+  const W=320,H=180;
+  ctx.clearRect(0,0,W,H);
+  const C={
+    ink:'#080b12',night0:'#0b111d',night1:'#101a29',night2:'#182536',night3:'#253244',
+    roof:'#171e29',roof2:'#242a35',roofHi:'#41414a',wall:'#2b2e37',wall2:'#37373d',wallHi:'#4a4140',
+    glass:'#122333',glassHi:'#1c3848',road:'#141922',road2:'#1c222c',road3:'#28303a',wet:'#39434b',
+    brick:'#53413e',wood:'#47332e',woodHi:'#705044',warm:'#a65d39',amber:'#d59a55',gold:'#f0c979',
+    red:'#812328',red2:'#b52d2c',redHi:'#ed5544',skin:'#c68a69',skinHi:'#e0aa82',
+    cloth:'#11151e',cloth2:'#202a35',clothHi:'#384452',paper:'#d8ceb5',paperShade:'#b5a384',
+    leaf:'#18251e',leaf2:'#233329',leafHi:'#344536',
+  };
+  const R=(x,y,w,h,color)=>{x=Math.round(x);y=Math.round(y);w=Math.round(w);h=Math.round(h);if(w>0&&h>0){ctx.fillStyle=color;ctx.fillRect(x,y,w,h);}};
+  const L=(x0,y0,x1,y1,color,size=1)=>{
+    let x=Math.round(x0),y=Math.round(y0),x1i=Math.round(x1),y1i=Math.round(y1);
+    const dx=Math.abs(x1i-x),sx=x<x1i?1:-1,dy=-Math.abs(y1i-y),sy=y<y1i?1:-1;let err=dx+dy;
+    for(;;){R(x-Math.floor(size/2),y-Math.floor(size/2),size,size,color);if(x===x1i&&y===y1i)break;const e=2*err;if(e>=dy){err+=dy;x+=sx;}if(e<=dx){err+=dx;y+=sy;}}
+  };
+  const hash=(x,y,s=11)=>{const n=Math.sin(x*127.1+y*311.7+s*74.7)*43758.5453;return n-Math.floor(n);};
+  function sky(dawn=false){
+    const bands=dawn?['#171b2a','#272132','#473039','#69413a','#885044','#a76448']:[C.night0,'#0d1524','#111d2c','#182334','#202937','#292b35'];
+    for(let y=0;y<84;y+=2){const t=Math.min(bands.length-1,Math.floor(y/15));R(0,y,W,2,bands[t]);if(y%10===0)R(0,y,W,1,bands[Math.max(0,t-1)]);}
+    if(dawn){
+      R(204,35,4,1,'#f3bf72');R(200,36,12,2,'#edb56d');R(195,38,22,3,'#db9860');R(190,41,32,4,'#b97651');R(185,45,42,5,'#8c5848');
+    }else{
+      [[24,15],[52,28],[88,12],[126,26],[178,17],[212,9],[279,22],[300,40],[97,43],[25,48]].forEach(([x,y],i)=>R(x,y,i%3===0?2:1,1,i%4===0?'#d4bd92':'#8797a4'));
+      // stepped moon and quiet pixel halo
+      R(251,17,18,2,'#55505a');R(247,19,26,2,'#716153');R(245,21,30,12,'#9a8060');R(249,33,22,4,'#82715e');R(254,37,12,2,'#62564e');
+      R(250,23,17,2,'#c2a576');R(248,25,21,7,'#d7bb85');R(252,32,15,3,'#c5a879');
+    }
+  }
+  function windowAt(x,y,w=14,h=18,lit=true){
+    R(x-2,y-2,w+4,h+4,'#151921');R(x,y,w,h,lit?'#81503a':C.glass);R(x+2,y+2,w-4,h-4,lit?'#dfa35e':C.glassHi);
+    R(x+Math.floor(w/2)-1,y,2,h,lit?'#3b2927':'#18232c');R(x,y+Math.floor(h/2)-1,w,2,lit?'#4a3128':'#19252e');
+    if(lit){R(x+3,y+3,3,2,'#f3c77c');R(x+3,y+7,2,2,'#bd7548');R(x+w-5,y+h-5,2,2,'#f3c77c');}
+    else{R(x+2,y+2,3,2,'#486072');R(x+w-5,y+h-5,2,2,'#385065');}
+  }
+  function house(x,y,w,h,seed=0,lit=true){
+    // steep tiled roof with stepped eaves
+    R(x-5,y+9,w+10,5,'#111722');R(x-3,y+5,w+6,4,C.roof);R(x+2,y+1,w-4,4,C.roof2);R(x+9,y-3,w-18,4,C.roofHi);R(x+17,y-6,w-34,3,C.roof2);
+    R(x-2,y+13,w+4,3,'#4d3733');
+    R(x,y+16,w,h-16,C.wall);R(x+4,y+19,Math.floor(w*.36),h-20,C.wall2);R(x+Math.floor(w*.55),y+19,Math.floor(w*.45)-4,h-20,'#242832');
+    R(x+2,y+17,w-4,2,'#70605a');
+    for(let yy=y+24;yy<y+h-7;yy+=9){R(x+4,yy,w-8,1,yy%2?C.brick:'#3b3639');for(let xx=x+8+(yy%3)*3;xx<x+w-4;xx+=19)R(xx,yy-3,1,4,'#51403d');}
+    const winW=Math.max(10,Math.floor(w*.2)),winH=15;
+    windowAt(x+8,y+25,winW,winH,lit&&seed%2===0);windowAt(x+w-winW-8,y+25,winW,winH,lit&&seed%3!==0);
+    R(x+Math.floor(w/2)-7,y+h-24,14,24,'#17181e');R(x+Math.floor(w/2)-5,y+h-22,10,21,C.wood);R(x+Math.floor(w/2)+3,y+h-11,2,2,C.amber);
+    R(x+Math.floor(w/2)-10,y+h-3,20,3,'#555052');R(x+Math.floor(w/2)-13,y+h,26,2,'#35343a');
+    R(x+w-5,y+18,2,h-18,'#191d25');R(x+w-8,y+21,5,3,'#68605b');
+    // small porch awning
+    R(x+Math.floor(w/2)-15,y+h-27,30,3,'#393139');R(x+Math.floor(w/2)-12,y+h-30,24,3,'#4b3835');
+  }
+  function streetLamp(x,y){
+    // blocky amber spill, kept palette-quantized instead of a smooth glow
+    R(x-24,y+9,48,2,'#171a22');R(x-19,y+5,38,4,'#21212a');R(x-13,y+2,26,3,'#362831');R(x-8,y,16,3,'#624036');
+    R(x-2,y+3,4,40,'#34333a');R(x-8,y+2,16,3,'#4d4140');R(x-7,y-2,14,4,'#886044');R(x-5,y-1,10,2,C.gold);R(x-3,y+5,6,1,'#edc77c');
+    for(let i=0;i<8;i++){R(x-1,y+7+i*5,2,2,i%2?'#5c5148':'#d3a35d');}
+    R(x-11,y+43,22,2,'#58473d');R(x-15,y+46,30,1,'#906447');
+  }
+  function buildingRow(){
+    // distant apartment blocks
+    [[0,55,42,43],[43,62,34,35],[82,53,31,43],[116,60,40,36],[204,57,31,39],[237,52,39,44],[278,61,42,35]].forEach(([x,y,w,h],i)=>{
+      R(x,y,w,h,i%2?'#151e2b':'#18202b');R(x+3,y+3,w-6,2,'#29303b');
+      for(let yy=y+9;yy<y+h-3;yy+=8)for(let xx=x+5;xx<x+w-3;xx+=8)R(xx,yy,3,3,hash(xx,yy,i)>.7?'#906246':'#354454');
+      R(x+2,y+h-3,w-4,3,'#101722');
+    });
+  }
+  function rain(){
+    for(let i=0;i<92;i++){const x=Math.floor(hash(i,7)*W),y=Math.floor(hash(i,19)*145);if(hash(i,31)>.24)L(x,y,x-3,y+7,hash(i,41)>.5?'#53606a':'#303c49',1);}
+  }
+  function road(dawn=false){
+    for(let y=95;y<H;y+=2){
+      const half=Math.min(158,23+Math.floor((y-95)*1.55)),left=160-half;
+      R(left,y,half*2,2,(Math.floor(y/8)%2)?'#1b202a':'#171c25');
+      if(left>4){R(left-7,y,6,2,'#35343a');R(160+half+1,y,Math.max(0,W-(160+half+1)),2,'#333137');}
+      if(y%10===1)R(left+3,y,half*2-6,1,'#252c35');
+    }
+    // broken reflections on the wet asphalt
+    for(let i=0;i<62;i++){
+      const y=108+Math.floor(hash(i,63)*68),half=Math.min(158,23+Math.floor((y-95)*1.55)),left=160-half;
+      const x=left+Math.floor(hash(i,71)*(half*2));
+      if(i%5===0)R(x,y,2+Math.floor(hash(i,83)*8),1,'#916346');
+      else if(i%3===0)R(x,y,2+Math.floor(hash(i,91)*12),1,'#43505a');
+      else R(x,y,1+Math.floor(hash(i,99)*5),1,'#303b47');
+    }
+    R(154,106,2,10,'#817362');R(153,118,3,3,'#4d5358');
+    if(dawn){for(let i=0;i<19;i++){const x=72+i*10,y=142+Math.floor(hash(i,121)*26);R(x,y,5,1,i%2?'#7a4d42':'#b78054');}}
+  }
+  function worker(x,y){
+    // back-facing patrol worker: shoulders, coat folds, tool and boots
+    R(x+5,y,12,2,'#080b11');R(x+3,y+2,16,5,'#151a22');R(x+5,y+4,11,6,C.skin);R(x+4,y+4,2,3,'#8b594a');R(x+14,y+4,2,3,'#e0aa82');
+    R(x+3,y+9,17,5,'#1b2330');R(x+1,y+13,21,19,'#111923');R(x+3,y+14,6,14,'#26313c');R(x+10,y+14,3,16,'#1b2029');R(x+15,y+14,5,13,'#0c121a');
+    R(x,y+15,4,12,'#171e28');R(x+19,y+15,4,11,'#171e28');R(x+1,y+26,4,3,C.skin);R(x+19,y+25,4,3,C.skin);
+    R(x+4,y+31,6,12,'#10151d');R(x+13,y+31,6,12,'#0d1219');R(x+2,y+42,9,3,'#080b10');R(x+12,y+42,9,3,'#080b10');
+    R(x+20,y+25,2,10,C.red2);R(x+21,y+23,1,2,C.redHi);R(x+18,y+34,5,1,'#e3a157');
+    R(x+6,y+18,2,5,'#53565d');R(x+15,y+19,1,7,'#48505a');
+  }
+  function merchant(x,y){
+    // Original shopkeeper portrait: the awning throws his face into deep shadow.
+    R(x+10,y,13,2,'#07090f');R(x+7,y+2,19,4,'#11121a');R(x+5,y+5,23,3,'#080a10');
+    R(x+7,y+7,20,9,'#111019');R(x+8,y+8,4,7,'#090b11');R(x+23,y+7,3,8,'#07090e');
+    R(x+19,y+10,2,1,'#92764d');R(x+20,y+10,1,1,'#d0aa64');
+    R(x+10,y+14,13,3,'#17131a');R(x+8,y+16,17,3,'#17151d');
+    // Red lantern light catches only the lower edge of his collar and jaw.
+    R(x+9,y+15,4,1,'#6a302b');R(x+18,y+15,5,1,'#5a2929');
+    R(x+10,y+19,13,4,'#10121a');R(x+5,y+22,23,6,'#17151d');R(x+2,y+27,29,36,'#0a0c12');
+    R(x+5,y+29,8,30,'#25232b');R(x+13,y+28,7,35,'#641f25');R(x+20,y+29,8,30,'#17161e');
+    R(x+15,y+30,3,31,'#b23735');R(x+16,y+30,1,27,'#e05a46');R(x+5,y+37,7,2,'#454149');R(x+21,y+38,6,2,'#35323a');
+    R(x-1,y+25,7,34,'#12141b');R(x+26,y+25,7,34,'#101219');R(x+1,y+55,6,7,'#c79372');R(x+26,y+55,6,7,'#c79372');
+    R(x+7,y+22,5,2,'#d5b576');R(x+21,y+22,5,2,'#d5b576');R(x+3,y+61,28,2,'#07090f');
+  }
+  function shadow(x,y,scale=1){
+    const q=(a,b,w,h,c)=>R(x+a*scale,y+b*scale,w*scale,h*scale,c);
+    q(10,0,17,6,'#050609');q(7,4,24,9,'#080a10');q(11,9,16,9,'#0b0e15');q(9,10,3,5,'#05060a');q(27,10,4,5,'#05060a');
+    q(13,12,3,2,'#ca3a32');q(23,12,3,2,'#ca3a32');q(14,12,1,1,'#f0a263');q(24,12,1,1,'#f0a263');
+    q(9,18,21,9,'#07090f');q(4,25,31,23,'#080a10');q(10,26,19,30,'#11111a');
+    q(2,27,5,23,'#07090f');q(33,25,5,22,'#07090f');q(0,44,7,18,'#07090f');q(33,42,8,21,'#07090f');
+    q(11,53,8,15,'#080a10');q(23,53,8,15,'#080a10');q(8,67,13,4,'#05070b');q(21,67,14,4,'#05070b');
+    q(13,22,3,22,'#321b24');q(22,23,2,19,'#25151e');
+    q(3,28,2,16,'#241e2b');q(34,28,2,14,'#221c29');q(12,57,3,9,'#2b202c');q(25,57,3,10,'#29202a');
+  }
+  function street(dawn=false){
+    sky(dawn);buildingRow();
+    house(-5,61,77,55,1,true);house(245,58,82,58,2,true);house(77,74,58,39,3,false);house(190,76,49,34,4,true);
+    // utility cables, poles, wires and rain
+    R(35,46,3,60,'#292b33');R(32,47,9,2,'#4b4040');R(35,51,3,2,C.amber);
+    L(0,48,152,60,'#292b36',1);L(83,52,319,43,'#242a34',1);L(131,41,266,51,'#252833',1);
+    road(dawn);streetLamp(37,49);
+    rain();
+    // rain-slick light pools and curb stones
+    R(18,103,42,1,'#614737');R(7,111,26,1,'#34434b');R(277,102,34,1,'#66503e');R(288,110,24,1,'#37434a');
+  }
+  function station(){
+    R(0,0,W,H,'#11131a');
+    for(let y=0;y<92;y+=6)R(0,y,W,6,y%12?'#17191f':'#202126');
+    R(0,91,W,4,'#5a3028');R(0,95,W,85,'#221d1c');
+    // window, rain, and distant alley beyond the patrol room
+    R(15,13,159,75,'#665247');R(20,18,149,64,'#0b1523');
+    for(let y=19;y<80;y+=7)R(21,y,146,1,'#213242');
+    [[24,49,27,30],[54,40,31,39],[92,46,25,33],[124,37,36,43]].forEach(([x,y,w,h],i)=>{R(x,y,w,h,'#171e28');R(x+4,y+8,w-8,h-8,'#232932');for(let xx=x+7;xx<x+w-5;xx+=12)R(xx,y+15,4,7,i%2?'#a35e3c':'#bd7c4b');});
+    for(let i=0;i<26;i++){const x=23+Math.floor(hash(i,223)*142),y=20+Math.floor(hash(i,241)*60);L(x,y,x-2,y+7,'#53606a',1);}
+    R(91,18,3,62,'#665247');R(20,53,149,3,'#59463e');
+    // notices, duty clock, hanging coat
+    R(197,16,73,56,'#312a27');R(201,20,65,48,'#c7b89b');R(205,24,54,1,'#7b5442');R(205,28,47,1,'#624c3f');R(205,33,51,1,'#a43a2f');R(205,39,42,1,'#665246');R(205,45,49,1,'#665246');R(205,51,34,1,'#665246');
+    R(283,16,25,25,'#353039');R(286,19,19,19,'#d4bf96');R(294,22,2,2,'#392b29');R(294,24,1,7,'#4b3932');R(295,30,6,1,'#4b3932');
+    R(277,50,8,32,'#11141b');R(273,53,16,4,'#171923');R(279,81,5,6,'#171923');
+    // desk, lamp, contract, redline tool
+    R(0,111,320,13,'#49332d');R(0,124,320,56,'#2c2524');R(0,127,320,3,'#6a4937');
+    R(18,112,105,8,'#d2c4a7');R(23,114,83,1,'#684e42');R(23,117,72,1,'#a24535');R(23,120,58,1,'#6f5949');
+    R(231,78,5,35,'#594131');R(222,76,22,3,'#a55d39');R(225,72,15,4,'#cf9654');R(227,74,10,2,'#f0c979');
+    R(180,118,42,3,'#171a20');R(190,121,4,8,'#13161b');R(212,121,4,8,'#13161b');
+    R(144,116,35,5,'#241d20');R(148,114,26,2,'#aa2828');R(153,117,17,2,'#ef5546');
+    R(0,170,320,10,'#16171c');
+  }
+  function impossible(){
+    sky(false);buildingRow();
+    // house geometry subtly contradicts perspective; duplicated entry is the anomaly
+    R(63,74,191,82,'#262630');R(70,70,177,4,'#644843');R(77,65,163,5,'#3e3338');R(88,59,141,6,'#332d35');R(105,53,107,6,'#453338');R(126,47,65,6,'#362d34');
+    R(76,82,165,67,'#3a3439');R(81,87,73,58,'#484042');R(158,87,77,58,'#292a34');
+    windowAt(91,96,28,25,true);windowAt(201,96,24,25,false);windowAt(136,83,24,21,true);
+    R(136,115,46,46,'#120f15');R(141,120,36,41,'#542026');R(146,125,26,36,'#16131a');R(162,139,3,3,C.gold);
+    R(105,143,31,6,'#1b1b24');R(180,144,28,5,'#17161e');
+    // empty forecourt; no figure appears in the forbidden room
+    R(0,157,320,23,'#141820');R(38,164,54,3,'#272a31');R(223,164,48,3,'#292830');
+    R(149,150,24,2,'#4c3534');R(159,143,3,4,'#d6a75f');
+    R(154,130,2,6,'#842a2c');R(159,127,2,5,'#a53a36');R(164,132,2,4,'#6d282d');
+  }
+  function yard(){
+    sky(false);R(0,77,320,103,'#1c201f');
+    R(0,61,71,83,'#302e31');R(6,55,65,6,'#57423c');R(18,49,41,6,'#43363a');R(27,45,23,4,'#59413a');
+    R(247,58,73,91,'#302a2b');R(253,52,65,6,'#4a3937');R(265,46,42,6,'#403336');
+    R(12,88,34,40,'#10151b');R(15,91,28,33,'#273342');R(18,95,22,24,'#101922');R(23,105,12,23,'#8e5038');
+    // old tree with layered leaf pixels and wet bark
+    [[125,35,56,12],[113,45,79,13],[105,57,95,17],[112,72,80,16],[123,87,59,13],[135,100,38,9]].forEach(([x,y,w,h],i)=>R(x,y,w,h,i%2?'#18251f':'#202e25'));
+    for(let i=0;i<48;i++){const x=108+Math.floor(hash(i,331)*90),y=39+Math.floor(hash(i,353)*68);R(x,y,2+Math.floor(hash(i,367)*3),2,hash(i,379)>.5?'#354435':'#28372c');}
+    R(151,83,13,51,'#3d302c');R(155,89,5,44,'#5a4033');R(151,125,15,9,'#171819');
+    // crooked fence and letter on the path
+    R(0,125,320,4,'#4c3933');R(0,142,320,3,'#483631');for(let x=5;x<320;x+=24){R(x,117,4,50,'#43332f');R(x+3,119,1,13,'#6b4838');}
+    R(84,146,19,15,'#d8ceb5');R(87,148,13,2,'#815847');R(87,152,11,1,'#7b6453');R(90,157,9,1,'#af3730');
+    R(0,168,320,12,'#14181c');R(42,166,35,2,'#34373a');R(249,165,26,2,'#3a3637');
+    for(let i=0;i<38;i++){const x=Math.floor(hash(i,401)*320),y=94+Math.floor(hash(i,419)*74);R(x,y,2+Math.floor(hash(i,431)*7),1,'#34423e');}
+  }
+  function doors(){
+    R(0,0,320,180,'#11131a');for(let y=0;y<100;y+=8)R(0,y,320,8,y%16?'#171a22':'#22232b');
+    R(27,19,115,142,'#50403c');R(32,24,105,137,'#171923');R(44,32,81,129,'#26303a');
+    R(181,19,112,142,'#6d2728');R(187,24,100,137,'#111016');R(198,32,78,129,'#331e26');
+    // plaques, frames, handles and threshold tiles
+    R(64,42,36,4,'#827261');R(220,42,36,4,'#a33a32');R(123,95,5,5,'#d7bc8b');R(198,95,5,5,'#e2a960');
+    for(let y=45;y<157;y+=10){R(49,y,3,2,'#303a42');R(274,y,3,2,'#6c2929');}
+    R(0,159,320,21,'#1c1b20');for(let x=0;x<320;x+=32)R(x,160,1,20,'#353039');
+    // a narrow red glow leaks through the wrong door's frame
+    R(187,116,2,31,'#4b1b24');R(189,124,2,21,'#8c292e');R(191,136,3,7,'#c1483c');R(0,0,12,180,'#090b11');R(307,0,13,180,'#090b11');
+  }
+  function madness(){
+    // Transparent game-over cutout: one fallen patrol worker under a pixel-stepped spotlight.
+    for(let y=0;y<150;y+=4){
+      const half=12+Math.floor(y*.48),tone=y<34?'#0b0e14':y<78?'#10131a':y<118?'#15171d':'#1a1a1f';
+      R(160-half,y,half*2,4,tone);
+      if(y>28&&y%12===0){R(160-half+4,y,2,4,'#191920');R(160+half-6,y,2,4,'#191920');}
+    }
+    // fallen figure in profile: head at right, bent legs at left
+    R(174,125,20,4,'#090c12');R(177,121,17,6,'#10131a');R(182,125,15,11,'#17151a');
+    R(190,128,8,7,'#98705c');R(193,130,5,5,'#c09172');R(187,126,10,3,'#080a10');R(196,131,2,2,'#17141a');
+    R(165,134,19,6,'#111722');R(139,137,43,15,'#141b25');R(144,139,25,4,'#2b3540');R(138,148,39,5,'#0d131b');
+    R(119,141,25,8,'#111721');R(111,148,24,7,'#10151d');R(93,152,23,7,'#0b1017');R(81,157,28,6,'#080c12');R(83,162,24,3,'#05080d');
+    R(117,151,27,6,'#10151d');R(104,156,26,6,'#0a0f16');R(98,161,26,3,'#05080d');
+    R(157,147,8,8,'#27313c');R(158,153,8,4,'#bb8164');R(165,155,6,2,'#80594c');
+  }
+  function phone(){
+    R(0,0,320,180,'#11131a');R(0,114,320,66,'#292322');for(let x=0;x<320;x+=12)R(x,116,1,64,'#342b29');
+    R(69,12,183,154,'#05070b');R(75,7,177,156,'#181a20');R(80,13,167,142,'#414044');R(86,19,155,128,'#0d1420');
+    R(91,27,145,83,'#172333');R(97,32,132,70,'#1b2b3b');
+    R(104,41,79,6,'#d7c7a4');R(104,54,114,2,'#8a7560');R(104,61,103,2,'#6c5c50');R(104,68,122,2,'#a14436');R(104,75,96,2,'#756659');
+    R(105,87,54,20,'#53232a');R(110,92,43,2,'#f0b969');R(110,98,33,2,'#c13d37');
+    R(155,119,24,7,'#5a5451');R(183,121,26,4,'#2b3038');R(159,137,45,5,'#262a31');R(174,151,26,3,'#5d5550');
+    R(0,105,320,2,'#61483b');R(22,102,29,4,'#9a6946');R(273,102,28,4,'#8d5a3b');
+    for(let i=0;i<35;i++){const x=Math.floor(hash(i,521)*320),y=118+Math.floor(hash(i,541)*58);R(x,y,2+Math.floor(hash(i,557)*14),1,'#49403b');}
+  }
+  function dawn(){
+    sky(true);buildingRow();house(-5,61,77,55,1,true);house(245,58,82,58,2,false);house(77,74,58,39,3,false);house(190,76,49,34,4,true);
+    road(true);streetLamp(37,49);
+    R(0,93,320,2,'#805447');R(0,98,320,1,'#b57550');
+    for(let i=0;i<45;i++){const x=Math.floor(hash(i,577)*320),y=96+Math.floor(hash(i,593)*77);R(x,y,2+Math.floor(hash(i,601)*10),1,i%2?'#9b6650':'#6b5960');}
+  }
+  function doorEnding(){
+    R(0,0,320,180,'#10131a');R(0,0,320,36,'#181b22');R(0,144,320,36,'#1b1718');
+    R(91,17,144,150,'#45352f');R(97,22,132,145,'#17191e');
+    for(let y=30;y<164;y+=12){R(103,y,119,1,'#28282c');R(106,y+3,3,1,'#614840');R(218,y+2,3,1,'#5e4238');}
+    R(116,34,92,15,'#25252b');R(120,38,84,2,'#5d4941');R(118,62,90,1,'#392e2d');R(119,92,87,1,'#392e2d');
+    R(207,93,6,6,'#d6a866');R(84,167,151,5,'#30272a');
+    L(72,34,255,135,'#471820',7);L(76,34,250,130,'#b32d2d',3);L(81,36,244,125,'#ed5a49',1);
+    [[72,34],[105,57],[139,77],[174,100],[210,119],[251,134]].forEach(([x,y])=>R(x,y,3,2,'#f16a4d'));
+  }
+  function merchantAtDoor(x,y){
+    R(x+7,y,12,2,'#07090e');R(x+4,y+2,18,5,'#10121a');R(x+6,y+7,15,9,'#0b0d13');R(x+8,y+9,2,1,'#b2935e');
+    R(x+5,y+15,18,6,'#15131a');R(x+2,y+21,24,27,'#090b11');R(x+7,y+23,6,23,'#30232a');R(x+13,y+22,4,25,'#74232a');R(x+17,y+23,6,23,'#17151d');
+    R(x,y+24,5,18,'#0e1118');R(x+22,y+24,5,18,'#0c0f15');R(x+2,y+41,4,4,'#b38464');R(x+22,y+41,4,4,'#b38464');
+    R(x+5,y+48,17,2,'#07090d');R(x+24,y+41,3,7,'#5b3c30');R(x+25,y+39,2,3,'#e0aa5e');
+  }
+  function endingTrap(){
+    sky(false);buildingRow();house(-8,53,88,77,2,false);house(241,51,91,79,4,false);road(false);
+    // repeated empty doorways fold toward one impossible market entrance
+    for(let i=0;i<4;i++){
+      const y=41+i*12,half=76-i*14,th=3;
+      R(160-half,y,th,49-i*7,'#22232b');R(160+half-th,y,th,49-i*7,'#1c2028');
+      R(160-half,y,half*2,2,i%2?'#302a31':'#25252e');
+    }
+    R(110,29,100,79,'#2d2429');R(118,35,84,72,'#4b3432');R(127,42,66,65,'#111017');
+    R(136,48,48,58,'#2d1c23');R(143,53,34,53,'#0b0d13');
+    R(130,39,60,4,'#865841');R(138,34,44,5,'#24232d');R(148,30,24,4,'#181d27');
+    R(134,49,3,55,'#8c2c30');R(187,49,3,55,'#70272d');R(138,53,2,48,'#c24a3d');R(185,54,2,45,'#a23b37');
+    merchantAtDoor(146,48);
+    worker(150,113);
+    for(let i=0;i<6;i++){const y=113+i*9,half=14+i*10;R(160-half,y,4,2,'#35404a');R(160+half-4,y,4,2,'#343d45');}
+    R(0,171,320,9,'#0e1219');
+  }
+  function merchantIsolated(){
+    // Transparent cutout stage: only the seller, counter, wares, and tied sack remain.
+    // The face stays in shadow; small rim highlights define the silhouette without a backdrop.
+    ctx.save();ctx.translate(113,13);ctx.scale(1.65,1.65);merchant(0,0);ctx.restore();
+    // heavy counter with a bright top edge and a deep inset front
+    R(91,112,221,5,'#765742');R(95,117,217,4,'#4b3631');R(99,121,208,33,'#34272a');R(106,125,194,24,'#211b22');
+    R(100,128,2,22,'#514039');R(305,128,3,22,'#503b34');R(95,153,217,5,'#17141a');
+    // individual wares sit on the shelf, separated by small contact shadows
+    R(137,108,21,3,'#35282a');R(139,101,16,7,'#b28349');R(142,98,10,4,'#d3ae6b');R(144,103,6,3,'#806243');
+    R(172,105,16,6,'#38262a');R(174,99,12,7,'#6e3032');R(177,96,7,4,'#ac5143');R(178,101,5,3,'#e0a55c');
+    R(207,105,24,5,'#3a2a2b');R(210,96,17,10,'#cfb57b');R(213,93,11,3,'#e8d49f');R(214,100,9,3,'#9b7d54');
+    R(249,105,18,5,'#3a2b2a');R(251,98,14,8,'#a3a081');R(254,95,8,4,'#c3bd91');R(255,100,6,3,'#6b806e');
+    R(278,107,20,4,'#302326');R(281,100,15,8,'#7c4e35');R(284,97,9,4,'#bd8750');R(285,103,7,3,'#e1b766');
+    R(132,111,172,2,'#c0935e');
+    // tied travel sack is displayed beside the stand as a second focal object
+    R(47,108,12,4,'#806044');R(43,112,20,4,'#92704a');R(44,115,18,2,'#4a332a');
+    R(40,117,27,4,'#856243');R(35,121,37,5,'#9a744b');R(30,126,48,7,'#a57b50');
+    R(27,133,54,9,'#9a744b');R(28,142,52,8,'#886744');R(31,150,46,8,'#795b3d');
+    R(36,158,36,6,'#6f5339');R(42,164,24,3,'#4d3c32');
+    R(34,130,3,18,'#b68b59');R(43,125,2,27,'#b18a58');R(65,131,2,20,'#594635');R(51,122,2,33,'#73543a');
+    R(50,111,4,6,'#d1a35e');R(47,110,11,2,'#55402f');R(53,117,3,4,'#e1c17a');
+  }
+  function draw(keyName){
+    if(keyName==='station'){station();return;}
+    if(keyName==='impossible'){impossible();return;}
+    if(keyName==='yard'){yard();return;}
+    if(keyName==='doors'){doors();return;}
+    if(keyName==='madness'){madness();return;}
+    if(keyName==='phone'){phone();return;}
+    if(keyName==='dawn'){dawn();return;}
+    if(keyName==='ending-redline'){doorEnding();return;}
+    if(keyName==='ending3'){street(false);shadow(143,47,1.25);return;}
+    if(keyName==='trap'){endingTrap();return;}
+    if(keyName==='merchant'){merchantIsolated();return;}
+    street(false);
+    if(keyName==='title'){worker(154,82);return;}
+    if(keyName==='shadow'){shadow(142,44,1.3);return;}
+  }
+  draw(key);
+}
+function drawPixelCanvases(root=app){
+  root.querySelectorAll('canvas[data-pixel-art],canvas[data-pixel-scene]').forEach(canvas=>{
+    const key=canvas.dataset.pixelArt||canvas.dataset.pixelScene;
+    drawPixelScene(canvas,key);
+    const img=document.createElement('img');
+    img.src=canvas.toDataURL('image/png');
+    img.width=canvas.width;img.height=canvas.height;
+    img.alt=canvas.getAttribute('aria-label')||'레드라인 픽셀 일러스트';
+    img.dataset.pixelKey=key;
+    canvas.replaceWith(img);
+  });
+}
+function pixelArtwork(key,alt='레드라인 도트 일러스트'){
+  return `<div class="art pixel-art"><canvas width="320" height="180" data-pixel-art="${key}" role="img" aria-label="${alt}"></canvas></div>`;
+}
+
+const KIM3=[
+  {text:'지난 밤에서도 본 그 남성이 물건들을 가지고 다시 찾아왔다. 일부는 처음 보는 것이고 일부는 예전에도 본 익숙한 물건이다.\n\n"안 죽고 잘 살아있었네? 주화도 꽤 모은 것 같고."',
+   choices:['빈정거리는 거냐고 묻는다','걱정해주는 거냐고 묻는다']},
+  {text:'그 자는 당신의 말에 눈썹을 까딱인다.\n\n"몇 없는 손님인데, 그쪽이 죽어버리면 나도 곤란하다고. 큰 돈 필요할 일이 좀 있거든."',
+   choices:['그럼 물건을 많이 팔아달라고 말한다.']},
+  {text:'당신의 말에 그는 일말의 고민도 없이 고개를 젓는다.\n\n"그건 안돼. 한꺼번에 많이 빼돌리면 나도 걸려."',
+   choices:['....']},
+  {text:'그는 당신의 떨떠름한 표정을 보곤 어깨를 으쓱인다.\n\n"뭐, 어쨋든 당신이 내 귀한 손님인건 변함이 없으니... 오늘도 한 번 구경 좀 하시겠어?"',
+   choices:['만물상을 둘러본다']},
+];
+const KIM5=[
+  {text:'어제는 보이지 않던 남자가 오늘은 다시 똑같은 모습으로 순찰실에 찾아왔다.\n\n"오랜만... 이라고 말하기도 애매한가? 내가 인간관계가 넓지가 않아서 잘 모르겠네."',
+   choices:['어제는 왜 오지 않았냐고 묻는다.']},
+  {text:'"개인적인 사정이 있어서 말이지. 누가 좀 곤란하게 했달까. 내가 당신처럼 한가하지는 않는다고."\n\n그는 그렇게 말하며 순찰실 구석에 놓인 당신의 계약서를 흘깃 본다.\n\n"나 없는 동안 주화를 꽤 모은 것 같으니 오늘은 특별히 더 귀한 것들로 가져와 봤어."',
+   choices:['만물상을 둘러본다']},
+];
+const KIM6=[
+  {text:'"나름 부지런하게 다닌다고 생각했는데, 나 말고 누가 먼저 다녀갔나 보네?"',
+   choices:['어떻게 알았냐고 묻는다']},
+  {text:'"희안한 물건을 파는 사람이 희안한 재주 하나 가지고 있나보다 생각해."\n\n물건을 하나씩 내려 놓던 그가 덧붙힌다.\n\n"딱히 손님을 엿보는데 쓰진 않았으니까. 안심하고."',
+   choices:['만물상을 둘러본다']},
+];
+function goShop(){
+  const c=DAY_CFG[S.day];
+  if(S._shopDay!==S.day || !S._pendingHouses){
+    S._shopPool=S.day>=11
+      ? [...SHOP_ITEMS.filter(x=>x.minDay===10), ...shuffle(SHOP_ITEMS.filter(x=>x.minDay===5)).slice(0,2)]
+      : S.day>=10
+      ? [...SHOP_ITEMS.filter(x=>x.minDay===10), pick(SHOP_ITEMS.filter(x=>x.minDay===5))]
+      : S.day>=5
+        ? SHOP_ITEMS.filter(x=>x.minDay===5)
+        : shuffle(SHOP_ITEMS.filter(x=>!x.minDay)).slice(0,3);
+    S._pendingHouses=genHouses(c.a,c.b,c.dc);
+    S._shopDay=S.day;
+  }
+  S.screen='shop'; render();
+}
+const KIM7_INTRO='그 사람은 오늘도 같은 자리에서 진열대를 펼쳐놓고 있다. 이상하게도 오늘은 어딘가 지쳐 보이는 기색이다.\n\n"오, 단골을 또 볼 수 있다니. 오늘이 행운의 날이 맞긴 하나봐. 그지?"';
+const KIM7_LUCK='"말 그대로 운이 좋은 날이라는거지. 삿된 것들이 평소보다 덜 할거야. 알아보기도 쉬울거고."\n\n그 남자는 그렇게 말하고는 진열대에 있는 물건들을 가리킨다.\n\n"그렇다고 행운에 모든걸 걸어서는 안돼. 그러니 물건 좀 보고 가지 않겠어, 고객님?"';
+const KIM7_TIRED='"새벽에 누구랑 대판 싸워서, 라고 말하면 물건 안사줄거야?"\n\n그 남자는 그렇게 말하고는 진열대에 있는 물건들을 가리킨다.\n\n"대비는 미리미리 해야 하는거야. 당신도 운 나쁘게 죽지 말라고."';
+function kim7Scene(){
+  const phase=S._kim7Phase||0;
+  let text, choices;
+  if(phase===0){
+    text=KIM7_INTRO;
+    choices=['행운의 날에 대해 묻는다','지쳐 보이는 이유에 대해 묻는다'];
+  } else {
+    text = phase===1?KIM7_LUCK:KIM7_TIRED;
+    choices=['만물상을 살펴본다'];
+  }
+  app.appendChild(el(`${hud()}<div class="card narr">${text}</div><div id="kim7Choices"></div>`));
+  choices.forEach((label,i)=>{
+    const b=document.createElement('button'); b.textContent=label;
+    b.onclick=()=>{
+      if(phase===0){ S._kim7Phase = i===0?1:2; render(); }
+      else { S._kim7Phase=0; S._kim10Phase=0; goShop(); }
+    };
+    $('kim7Choices').appendChild(b);
+  });
+}
+const KIM10_A='\n\n"하암... 용케 살아있었네?"';
+const KIM10_R8='"무슨 일? 난 그날 여기 안왔어. 저번에도 말했잖아, 손님. 난 매번 한가하지 않다니까."';
+const KIM10_R9='"무슨 일? 난 그날 여기 안왔어. 뭔가 찜찜해서."';
+const KIM10_NO_A='그 말을 들은 남자의 입매가 굳게 다물렸다.\n\n"응? 잘 못들었는데. 다시 말해주지 않겠어?"';
+const KIM10_NO_B='"....진심이야?"';
+const KIM10_NO_C='"알았어... 쯧, 그 놈들 이런 식으로 내 장사를 방해하다니."\n\n그는 물건을 도로 집어넣고는 돌아간다. 아마 다시 돌아오지 않을 것 같다.';
+function kim10Scene(){
+  const phase=S._kim10Phase||0;
+  const buy=()=>{ S._kim10Phase=0; S._kimSmile=true; goShop(); };
+  let text, choices, next;
+  if(phase===0){
+    text='피곤한 기색으로 하품하던 남자가 노골적으로 '+playerNameMarkup(S.name)+josa(S.name,'을','를')+' 바라본다.'+KIM10_A;
+    choices=['8일차의 일을 물어본다','9일차의 일을 물어본다','오늘은 물건을 사지 않겠다고 말한다'];
+    next=i=>{ S._kim10Phase=[1,2,3][i]; render(); };
+  } else if(phase===1||phase===2){
+    text = phase===1?KIM10_R8:KIM10_R9;
+    choices=['만물상을 살펴본다'];
+    next=()=>{ S._kim10Phase=0; goShop(); };
+  } else if(phase===3){
+    text=KIM10_NO_A;
+    choices=['다시 한번 오늘은 물건을 사지 않겠다고 말한다','물건을 사겠다고 말한다'];
+    next=i=> i===0 ? (S._kim10Phase=4, render()) : buy();
+  } else if(phase===4){
+    text=KIM10_NO_B;
+    choices=['진심이라고 말한다','미안하다고 하고 물건을 산다'];
+    next=i=> i===0 ? (S._kim10Phase=5, render()) : buy();
+  } else {
+    text=KIM10_NO_C;
+    choices=['계속한다'];
+    next=()=>{ S._kim10Phase=0; S.kimGone=true; S.screen='day_intro'; render(); };
+  }
+  app.appendChild(el(`${hud()}<div class="card narr">${text}</div><div id="kim10Choices"></div>`));
+  choices.forEach((label,i)=>{
+    const b=document.createElement('button'); b.textContent=label;
+    b.onclick=()=>next(i);
+    $('kim10Choices').appendChild(b);
+  });
+}
+function enterDay10(){
+  S._mindLoss=Math.max(0,(S._mindLoss||0)-1);
+  S.restNotice='하루 몸을 뉘인 덕분인지, 정신이 한결 안정을 되찾은 것 같다. (정신력 +1)';
+  S.day=10; S._maintSnapshot=takeSnap();
+  startDay10();
+}
+function startDay10(){
+  const c=DAY_CFG[10];
+  S._history[10]={snapshot:takeSnap(), retryArgs:[10,c.a,c.b,c.dc],
+    extra:{knowsResignation:S.knowsResignation, resignationSubmitted:S.resignationSubmitted, resignationCorrect:S.resignationCorrect, d9Worked:S.d9Worked}};
+  S.mirror=true; S.mindMax=(S.mindMax||0)+1;
+  S.screen='day10_gift';
+  render();
+}
+const NPC_FONT="font-family:'Segoe Script','Comic Sans MS',cursive;font-style:italic;color:#fff;letter-spacing:.5px";
+const npc=t=>`<span style="${NPC_FONT}">${t}</span>`;
+const shopPrice=it=>Math.max(1,it.cost-(S.day===11?2:0));
+function kim13Scene(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">"오늘이 마지막이야."
+
+남자는 더 말하지 않고 물건들을 꺼내보인다.</div>
+    <button id="k13Shop">만물상을 살펴본다</button>
+  `));
+  $('k13Shop').onclick=goShop;
+}
+function kim11Scene(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">"또 보네, 손님."
+
+그는 평소보다 많은 물건을 가지고 순찰실 앞에 도착해 있다.
+
+"조만간 이 근처를 뜰 예정이야. 처분 할 수 있는 것들은 빨리 처리하려고."</div>
+    <button id="k11Shop">만물상을 살펴본다</button>
+  `));
+  $('k11Shop').onclick=goShop;
+}
+function envelopeBar(){
+  const b=document.createElement('button');
+  b.style.marginTop='12px'; b.textContent='✉ 봉투를 열어본다';
+  b.onclick=()=>{ S._envReturn=S.screen; S.screen='env_open'; render(); };
+  return b;
+}
+function kimScene(script){
+  const step=S._kimStep||0, st=script[step];
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">${st.text}</div>
+    <div id="kimChoices"></div>
+  `));
+  st.choices.forEach(label=>{
+    const b=document.createElement('button');
+    b.textContent=label;
+    b.onclick=()=>{
+      if(step<script.length-1){ S._kimStep=step+1; render(); }
+      else { S._kimStep=0; goShop(); }
+    };
+    $('kimChoices').appendChild(b);
+  });
+}
+
+const H9=[
+  '순찰실 밖에서 누군가 걸어가는 발소리가 들린다. 규칙적인 걸음. 당신이 매일 밤 걷던 속도와 같다.',
+  '발소리가 다시 지나간다. 이번에는 문 앞에서 한 번 멈췄다가 지나간다.',
+  '세 번째 발소리가 문 앞에서 멈춘다. 문 쪽으로 무언가를 가져다 대는 기척이 느껴진다.',
+];
+function oppLevel(stat){
+  const h1=S._history[1];
+  const sn=(h1&&h1.snapshot)?h1.snapshot:{stats:S.stats,bonus:{}};
+  return Math.floor((sn.stats[stat]||0)/2)+Math.floor(((sn.bonus||{})[stat]||0)/2);
+}
+function doHold(stat){
+  const h=S._h9;
+  const my=rand(1,20), myLv=LV(stat), myTot=my+myLv;
+  const os=pick(['observe','hearing','instinct']);
+  const op=rand(1,20), opLv=oppLevel(os), opTot=op+opLv;
+  const win=myTot>=opTot;
+  let line=`[${CHECK_LABEL[stat]} 대항 판정] 나 <span class="roll">${my}</span> + Lv.${myLv} = ${myTot}\n상대 [${CHECK_LABEL[os]}] <span class="roll">${op}</span> + Lv.${opLv} = ${opTot}\n\n`;
+  if(win){
+    line+='<span class="ok">상대의 시도를 막아냈다.</span> 발소리가 천천히 멀어진다.';
+  } else {
+    line+='<span class="bad">문 바깥에서 붉은 선이 그어진다. 순찰실 문에 레드라인이 그려졌다.</span>\n\n';
+    const mit=useKkokdu();
+    if(mit){ line+='<span class="ok">'+mit+'</span>'; }
+    else {
+      S._mindLoss=(S._mindLoss||0)+1;
+      line+='<span class="bad">(정신력 -1)</span>';
+      if(LV('mind')-(S._mindLoss||0)<=0){ S._end3v='mimic'; S._end3Lead=line; S.screen='ending3'; render(); return; }
+    }
+  }
+  h.result=line; h.phase='result'; render();
+}
+const K8_TEXT={
+  observe:'걸음 걸이가 이상하다. 사람 다리가 저렇게 많던가?',
+  hearing:'"팝니다... 팔아요..." 존댓말을?',
+  instinct:'당신이 아는 그 사람이 아니다.',
+};
+function kim8Event(){
+  if(!S._k8) S._k8={checks:0,log:['저 멀리서 그 남자가 걸어오고 있다.'],phase:'approach',text:''};
+  const k=S._k8;
+  if(k.phase==='approach'){
+    const rem=maxChecks()-k.checks;
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">${k.log.join('\n\n')}</div>
+      <div class="card">
+        <div class="sub" style="margin-bottom:10px">남은 판정 횟수: ${rem}</div>
+        <div class="row">
+          <button data-k8="observe" ${rem<=0?'disabled':''}>관찰력 판정<br><small>시야 · 형체, 빛, 변화</small></button>
+          <button data-k8="hearing" ${rem<=0?'disabled':''}>듣기 판정<br><small>청각 · 소리, 기척</small></button>
+          <button data-k8="instinct" ${rem<=0?'disabled':''}>직감 판정<br><small>설명 못 할 느낌 · 오한, 기운</small></button>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button id="k8Line">🔴 레드라인을 친다</button>
+        </div>
+      </div>
+    `));
+    app.querySelectorAll('[data-k8]').forEach(b=>b.onclick=()=>doK8Check(b.dataset.k8));
+    $('k8Line').onclick=()=>{ k.phase='choose'; render(); };
+  } else if(k.phase==='choose'){
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">어디에 레드라인을 칠까?</div>
+      <button id="k8Floor">바닥에 친다</button>
+      <button id="k8Door">순찰실 문에 친다</button>
+    `));
+    $('k8Floor').onclick=()=>resolveK8('floor');
+    $('k8Door').onclick=()=>resolveK8('door');
+  } else {
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">${k.text}</div>
+      <button id="k8Continue">계속한다</button>
+    `));
+    $('k8Continue').onclick=()=>{ S._k8=null; S.screen='day_intro'; render(); };
+  }
+}
+function doK8Check(stat){
+  const k=S._k8;
+  if(k.checks>=maxChecks()) return;
+  k.checks++;
+  const dc=DAY_CFG[8].dc;
+  const roll=rand(1,20), total=roll+LV(stat), success=total>=dc;
+  let line=`[${CHECK_LABEL[stat]} 판정] 주사위 <span class="roll">${roll}</span> + Lv.${LV(stat)} = ${total} / DC ${dc} → `;
+  line+= success?'<span class="ok">판정 성공</span>':'<span class="bad">별다른 변화 없음</span>';
+  k.log.push(line);
+  if(success) k.log.push(K8_TEXT[stat]);
+  render();
+}
+function resolveK8(where){
+  const k=S._k8;
+  if(where==='floor'){
+    const hit='붉은 선이 손을 따라 바닥 위로 길게 그어졌다.\n\n만물상 주인의 형상을 한 무언가는 가까이 다가올수록 풀려버리는 실타레처럼 형체가 무너져 간다.\n\n그것은 붉은 선을 비웃듯이 너무나도 쉽게 그걸 넘어버린다.';
+    const mit=useKkokdu();
+    if(mit){
+      k.phase='survived';
+      k.text=hit+'\n\n<span class="ok">'+mit+'</span>\n\n식은땀을 흘리며 간신히 정신을 붙잡는다.';
+      render();
+    } else {
+      S._overText=hit+'\n\n<span class="bad">(정신력 최대치가 하락한다)</span>';
+      S.screen='gameover'; render();
+    }
+    return;
+  }
+  k.phase='safe';
+  k.text='붉은 선이 손을 따라 문 위로 길게 그어졌다.\n\n순찰실 안으로 도망가 문을 잠근다.\n\n창문이 없어서 바깥을 확인할 수 없다.\n\n문고리가 덜커덕거리는 소리가 몇 번 일어나다 사라진다.';
+  render();
+}
+
+const NE_INTRO='세 번째 집을 지나자 골목 끝, 북동쪽에 낯선 건물이 보인다. 문 옆에 「순찰실」이라고 적힌 작은 간판이 걸려 있다.\n\n계약서에는 분명 북동쪽 순찰실은 없다고 적혀 있었다.\n\n창문 안에서 불이 켜졌다 꺼지기를 반복한다. 누군가 안에 있는 건지, 전등이 고장 난 건지 알 수 없다.';
+const NE_TEXT={
+  observe:'실루엣은 보이지 않는다. 보이지 않는다. 않는다. 않는 아 ㄶ ... 봤어?',
+  hearing:'틱. 틱. 틱. 불을 껏다 키는 소리가 들린다. 틱.틱.틱. 틱틱틱틱틱틱틱틱',
+  instinct:'알려고 하지마 뒤로돌아 어서 지나가지나가나가!!!!!!!!!!!',
+};
+function takeSnap(){
+  return JSON.parse(JSON.stringify({
+    stats:S.stats, bonus:S.bonus, items:S.items, coins:S.coins, slots:S.slots,
+    candyCharges:S.candyCharges, talisman:S.talisman, _mindLoss:S._mindLoss||0,
+    mindMax:S.mindMax||0, mirror:!!S.mirror, note11:!!S.note11, kimGone:!!S.kimGone, safeLetter:!!S.safeLetter, cleanUsed:!!S.cleanUsed, cleanCorrect:!!S.cleanCorrect, cleanDay:S._cleanDay||0
+  }));
+}
+function applySnap(snap){
+  if(!snap) return;
+  S.stats=JSON.parse(JSON.stringify(snap.stats));
+  S.bonus=JSON.parse(JSON.stringify(snap.bonus));
+  S.items=JSON.parse(JSON.stringify(snap.items));
+  S.coins=snap.coins; S.slots=snap.slots;
+  S.candyCharges=snap.candyCharges; S.talisman=snap.talisman;
+  S._mindLoss=snap._mindLoss;
+  S.mindMax=snap.mindMax||0; S.mirror=!!snap.mirror; S.note11=!!snap.note11; S.kimGone=!!snap.kimGone; S.safeLetter=!!snap.safeLetter; S.cleanUsed=!!snap.cleanUsed; S.cleanCorrect=!!snap.cleanCorrect; S._cleanDay=snap.cleanDay||0;
+}
+function beginDay(day, snapshot, extra){
+  if(snapshot) applySnap(snapshot);
+  if(extra){
+    S.knowsResignation=extra.knowsResignation;
+    S.resignationSubmitted=extra.resignationSubmitted;
+    S.resignationCorrect=extra.resignationCorrect;
+    S.d9Worked=extra.d9Worked;
+  }
+  S.day=day;
+  S.fortuneHint=''; S.restNotice=''; S._kimStep=0; S._kim7Phase=0; S._kim10Phase=0; S._k8=null; S._predStep=undefined; S._resignEndStep=0;
+  S._pendingHouses=null; S._shopDay=undefined; S._noteDone=false; S._d9Phase=0; S._h9=null;
+  Object.keys(S._history).forEach(k=>{ if(+k>day) delete S._history[k]; });
+  if(day===1){ S._drawerPool=shuffle(DRAWER_ITEMS).slice(0,2); S._equipNext='day1_intro'; S.screen='equip1'; }
+  else if(day===6){ S._predStep=0; S.screen='predecessor_event'; }
+  else if(day===9){ S.screen='day9_start'; }
+  else if(day===10){ startDay10(); return; }
+  else { S.screen='day_rules'; }
+  render();
+}
+function jumpToDay(day){
+  const h=S._history[day];
+  if(!h) return;
+  beginDay(day, h.snapshot, h.extra);
+}
+function endGameNav(){
+  const box=document.createElement('div');
+  box.style.marginTop='20px';
+  box.appendChild(confirmBtn(
+    '⟲ 처음부터 다시 시작하기',
+    '정말 처음부터 다시 시작할까요?<br><small>한 번 더 누르면 이름 입력부터 다시 시작합니다</small>',
+    ()=>location.reload()));
+  const days=Object.keys(S._history).map(Number).sort((a,b)=>a-b);
+  if(days.length){
+    const toggle=document.createElement('button');
+    toggle.textContent='◆ 원하는 회차로 이동하기';
+    const panel=document.createElement('div');
+    panel.style.display='none'; panel.style.marginTop='8px';
+    days.forEach(d=>{
+      panel.appendChild(confirmBtn(
+        `${d}일차부터 다시 진행<br><small>그 회차 시작 시점의 스탯·장비·주화로 되돌아갑니다</small>`,
+        `정말 ${d}일차로 이동할까요?<br><small>한 번 더 누르면 ${d}일차 순찰이 새로 시작됩니다</small>`,
+        ()=>jumpToDay(d)));
+    });
+    toggle.onclick=()=>{ panel.style.display = panel.style.display==='none'?'block':'none'; };
+    box.appendChild(toggle); box.appendChild(panel);
+  }
+  return box;
+}
+function goPrevRound(){
+  jumpToDay(S._retryArgs[0]);
+}
+function confirmBtn(html, armedHtml, action){
+  const w=el(`<button style="margin-top:12px">${html}</button>`);
+  const btn=w.firstChild; let armed=false;
+  btn.onclick=()=>{
+    if(!armed){armed=true;btn.innerHTML=armedHtml;return;}
+    action();
+  };
+  return btn;
+}
+function resetBar(){
+  const box=document.createElement('div');
+  if(S.day>=2 && S._daySnapshot && S._retryArgs){
+    const pd=S._retryArgs[0];
+    box.appendChild(confirmBtn(
+      `⏪ 이전 회차로 돌아가기<br><small>${pd}일차 순찰을 시작 상태에서 처음부터 다시 진행합니다</small>`,
+      `정말 ${pd}일차로 돌아갈까요?<br><small>한 번 더 누르면 ${pd}일차 순찰이 새로 시작됩니다</small>`,
+      goPrevRound));
+  }
+  return box;
+}
+function addItem(it0){
+  const it=Object.assign({},it0);
+  S.items.push(it);
+  if(it.stat) S.bonus[it.stat]+=it.val;
+  if(it.consumable==='candy') S.candyCharges=1;
+  if(it.consumable==='talisman') S.talisman=true;
+  if(it.mindMax) S.mindMax=(S.mindMax||0)+it.mindMax;
+}
+function removeItem(it){
+  S.items=S.items.filter(x=>x.id!==it.id);
+  if(it.stat) S.bonus[it.stat]-=it.val;
+  if(it.consumable==='candy') S.candyCharges=0;
+  if(it.consumable==='talisman') S.talisman=false;
+  if(it.mindMax) S.mindMax=(S.mindMax||0)-it.mindMax;
+}
+function hasItem(id){ return S.items.some(i=>i.id===id); }
+function useKkokdu(){
+  const it=S.items.find(i=>i.id==='kkokdu' && i.charges>0);
+  if(!it) return null;
+  it.charges--;
+  const left=it.charges;
+  if(left<=0) removeItem(it);
+  return '작은 사람이 당신을 대신해 피해를 받았다. '+(left>0?left+'번 더 도움을 받을 수 있을 것 같다.':'더 이상 도움을 받을 수 없을 것 같다.');
+}
+function contractBar(){
+  const box=document.createElement('div');
+  const btn=document.createElement('button');
+  const label='📄 계약서(기본 수칙) 다시 보기';
+  btn.style.marginTop='12px'; btn.textContent=label;
+  const panel=document.createElement('div');
+  panel.style.display='none'; panel.style.marginTop='10px';
+  const cmode=(S.day===6)?'secret':(S.kimGone && S.day>=11)?'only8':(S.day===5 && S.screen==='day_rules');
+  panel.innerHTML='<h2>순찰 근무 계약서</h2>'+contractCardHTML(cmode);
+  btn.onclick=()=>{
+    const open=panel.style.display!=='none';
+    panel.style.display=open?'none':'block';
+    btn.textContent=open?label:'📄 계약서 닫기';
+  };
+  box.appendChild(btn); box.appendChild(panel);
+  return box;
+}
+function itemTag(it){
+  if(it.stat) return `${CHECK_LABEL[it.stat]} +${it.val}`;
+  if(it.id==='kkokdu') return `피해 감면 · ${it.charges}회 남음`;
+  if(it.mindMax) return `정신력 최대치 +${it.mindMax}`;
+  return ({candy:'정신력 +1 · 1회용',bead:'주화 2배 (15%)',inju:'판정 횟수 +1'})[it.consumable]||'';
+}
+function slotBar(){
+  const wrap=el(`<div class="card" style="margin-top:24px;padding:12px 14px"><div class="sub" style="margin:0 0 8px">장비 슬롯 (${S.items.length}/${S.slots}) · 장비를 누르면 버릴 수 있습니다</div><div class="row" style="gap:8px"></div></div>`).firstChild;
+  const row=wrap.querySelector('.row');
+  for(let i=0;i<S.slots;i++){
+    const it=S.items[i];
+    if(it){
+      const btn=confirmBtn(
+        `<b>${it.name}</b><br><span style="font-size:.75rem;color:var(--dim)">${itemTag(it)}</span><br><small style="color:var(--dim)">누르면 버리기</small>`,
+        '정말 버릴까요?<br><small>한 번 더 누르면 버립니다</small>',
+        ()=>{ removeItem(it); render(); });
+      btn.style.margin='0'; btn.classList.add('slot','filled');
+      row.appendChild(btn);
+    } else {
+      const d=document.createElement('div'); d.className='slot'; d.textContent='비어 있음';
+      row.appendChild(d);
+    }
+  }
+  if(S.mirror) wrap.appendChild(el(`<div class="sub" style="margin:10px 0 0">특수 아이템 · <b>거울 조각</b> — 정신력 최대치 +1 (슬롯 미차지)</div>`).firstChild);
+  return wrap;
+}
+
+function render(){
+  app.innerHTML='';const f=SCREENS[S.screen];f();
+  if(!['start','stats','contract','handover','gameover','resign_ending','ending3','true2','true1','ending5'].includes(S.screen)) app.appendChild(slotBar());
+  if(!['start','stats','contract','handover','gameover','resign_ending','ending3','true2','true1','ending5'].includes(S.screen)) app.appendChild(contractBar());
+  if(S.safeLetter && !S.cleanUsed && S.day>=12 && ['day_rules','equip1','kim_intro','shop','day_intro'].includes(S.screen)) app.appendChild(envelopeBar());
+  if(['day1_intro','day_rules','equip1','kim_intro','shop','day_intro','day9_start','day9_room','day9_go','predecessor_event','cabinet','cabinet_open','resign_name','resign_done'].includes(S.screen)) app.appendChild(resetBar());
+  drawPixelCanvases();
+  mountLanguageControls();
+  localizeScreen();
+  window.scrollTo(0,0);
+}
+
+function sceneKey(){
+  const s=S.screen;
+  if(['gameover','ending3','true1','true2','ending5','ending','next_wait'].includes(s)) return '';
+  if(s==='kim_intro') return S.kimGone||S.day===4?'alley':(S.day===8?'shadow':'merchant');
+  if(s==='shop') return 'merchant';
+  if(s==='black_event') return 'shadow';
+  if(s==='backyard_event') return 'yard';
+  if(['door_event','ne_room','ne_gone'].includes(s)) return 'impossible';
+  if(s==='day9_hold') return 'station';
+  if(['day_rules','equip1','day1_intro','cabinet','cabinet_open','predecessor_event','day9_room','day9_go','day10_gift','resign_name','resign_done','env_open','env_name','env_done'].includes(s)) return 'station';
+  if(['day_intro','day_summary','day9_start','day9_end','patrol'].includes(s)) return 'alley';
+  return '';
+}
+function sceneVisual(){
+  const key=sceneKey();
+  if(!key) return '';
+  const labels={alley:'남동쪽 골목',merchant:S.day>=10?'김솔의 만물상':'알 수 없는 만물상',shadow:'가로등 아래',impossible:'북동쪽 순찰실',yard:'집 뒤편',station:'남동쪽 순찰실'};
+  const label=labels[key];
+  const clock=S.screen==='patrol'?String(S.hour+1).padStart(2,'0')+':00':'23:00';
+  return `<figure class="scene-visual" role="group" aria-label="${label} 장면"><canvas width="320" height="180" data-pixel-scene="${key}" role="img" aria-label="${label}의 픽셀 일러스트"></canvas><figcaption><strong>${label}</strong><span>${clock} · 야간 기록</span></figcaption></figure>`;
+}
+function escapeHtml(value){
+  return String(value).replace(/[&<>"']/g, char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+
+function hud(){
+  return `<div class="hud">
+    <span>이름 <b>${playerNameMarkup(S.name||'―')}</b></span>
+    <span>관찰 <b>${LV('observe')}</b> · 듣기 <b>${LV('hearing')}</b> · 정신 <b>${LV('mind') - (S._mindLoss||0)}</b> · 직감 <b>${LV('instinct')}</b></span>
+    <span class="coin">주화 ${S.coins}</span>
+  </div>${sceneVisual()}`;
+}
+
+function el(html){const d=document.createElement('div');d.innerHTML=html;return d;}
+
+const SAVE_KEY='redline_save_v1';
+function saveGame(){
+  try{
+    localStorage.setItem(SAVE_KEY, JSON.stringify(S));
+    return true;
+  }catch(e){ return false; }
+}
+function hasSave(){
+  try{ return !!localStorage.getItem(SAVE_KEY); }catch(e){ return false; }
+}
+function loadGame(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const data=JSON.parse(raw);
+    Object.keys(S).forEach(k=>delete S[k]);
+    Object.assign(S,data);
+    return true;
+  }catch(e){ return false; }
+}
+function clearSave(){
+  try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
+}
+function statPreview(it){
+  if(it.stat){
+    const before=LV(it.stat);
+    const after=Math.floor((S.stats[it.stat]+S.bonus[it.stat]+it.val)/2);
+    return `<div style="font-size:.78rem;color:var(--coin);margin:2px 0">${CHECK_LABEL[it.stat]} Lv.${before} → Lv.${after}</div>`;
+  }
+  if(it.consumable==='candy'){
+    return `<div style="font-size:.78rem;color:var(--coin);margin:2px 0">정신력 1회 회복</div>`;
+  }
+  if(it.mindMax) return `<div style="font-size:.78rem;color:var(--coin);margin:2px 0">정신력 최대치 +${it.mindMax}</div>`;
+  if(it.consumable==='inju') return `<div style="font-size:.78rem;color:var(--coin);margin:2px 0">판정 횟수 +1</div>`;
+  return '';
+}
+
+const SCREENS={
+
+start(){
+  app.appendChild(el(`
+    ${pixelArtwork('title','레드라인의 심야 골목')}
+    <h1>레드라인</h1>
+    <div class="sub">시급 5만원, 위험수당 포함 40만원. 심야 순찰 / 이상현상 보고직</div>
+    <div class="card narr">돈이 급했다. 그래서 이 공고를 봤을 때 의심보다 계산이 먼저 섰다.
+23:00부터 07:00까지, 단지를 순찰하며 이상한 집 앞에 붉은 선을 긋는다. 그게 전부라고 했다.
+문자로 받은 주소를 따라가니, 반쯤 불 꺼진 주택단지가 나타났다. 초입에 한 남자가 서 있었다 — 그는 자신을 전임 순찰자라고 소개하며 인수인계를 하러 왔다고 밝혔다. 그는 나에게 어딘가 씁쓸한 미소를 지으며 계약서를 건내었다.</div>
+    <div class="card">
+      <div style="margin-bottom:10px;color:#c7c1b3">계약서에 서명할 이름을 적어주십시오.</div>
+      <input id="nameInput" placeholder="이름" style="width:100%;padding:10px;background:#1b1b1e;border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:1rem">
+    </div>
+    <button id="signBtn">서명한다</button>
+    ${hasSave()?`<div style="margin-top:16px"><button id="continueBtn">📂 저장된 게임 이어하기</button><button id="deleteSaveBtn" style="color:var(--dim);font-size:.85rem">저장 데이터 삭제</button></div>`:''}
+  `));
+  $('signBtn').onclick=()=>{
+    const v=$('nameInput').value.trim();
+    if(!v){$('nameInput').style.borderColor='var(--red)';return;}
+    S.name=v; S.screen='stats'; render();
+  };
+  if(hasSave()){
+    $('continueBtn').onclick=()=>{ if(loadGame()) render(); };
+    $('deleteSaveBtn').onclick=()=>{ clearSave(); render(); };
+  }
+},
+
+stats(){
+  const keys=[['observe','관찰력','시각적 이상을 포착한다'],['hearing','듣기','소음을 통해 이상을 포착한다'],['mind','정신력','0이 되면 그 자리에서 기절, 게임 오버'],['instinct','직감','근거 없이 현실을 가늠한다']];
+  const used=Object.values(S.stats).reduce((a,b)=>a+b,0);
+  const left=S.points-used;
+  app.appendChild(el(`
+    <h2>${playerNameMarkup(S.name)}, 스탯을 배분하십시오</h2>
+    <div class="sub">총 20포인트. 2포인트당 1레벨이 됩니다. 남은 포인트: <b style="color:${left===0?'#7fae7f':'var(--red)'}">${left}</b></div>
+    <div class="card" id="statCard"></div>
+    <button id="okBtn" ${left!==0?'disabled':''}>배분 완료</button>
+  `));
+  const card=$('statCard');
+  keys.forEach(([k,label,desc])=>{
+    const row=el(`
+      <div class="statgrid">
+        <div><b>${label}</b><div style="font-size:.78rem;color:var(--dim)">${desc}</div></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button data-k="${k}" data-d="-1" style="width:32px;padding:6px;margin:0;text-align:center">－</button>
+          <input readonly value="${S.stats[k]}" id="v_${k}">
+          <button data-k="${k}" data-d="1" style="width:32px;padding:6px;margin:0;text-align:center">＋</button>
+        </div>
+        <div style="font-family:monospace;color:var(--dim);text-align:right">Lv.${Math.floor(S.stats[k]/2)}</div>
+      </div>`);
+    card.appendChild(row);
+  });
+  card.querySelectorAll('button').forEach(b=>{
+    b.onclick=()=>{
+      const k=b.dataset.k,d=+b.dataset.d;
+      const used=Object.values(S.stats).reduce((a,x)=>a+x,0);
+      if(d>0 && used>=S.points) return;
+      if(d<0 && S.stats[k]<=0) return;
+      S.stats[k]+=d;
+      render();
+    };
+  });
+  $('okBtn')&&($('okBtn').onclick=()=>{S.screen='contract';render();});
+},
+
+contract(){
+  app.appendChild(el(`
+    <h2>순찰 근무 계약서</h2>
+    ${CONTRACT_CARD}
+    <button id="signBtn2">서명한다</button>
+  `));
+  $('signBtn2').onclick=()=>{S.screen='handover';render();};
+},
+
+predecessor_event(){
+  const step=S._predStep||0;
+  let text, choices, onPick;
+  if(step===0){
+    text='이제는 제법 익숙해진 출근길. 이상현상이 아직 나타나지 않은 오후 11시.\n\n순찰실 앞에 누군가가 서 있다.\n\n희끗한 머리를 가진 중년 남성. 지금 입고 있는 순찰복의 옛 주인이다.';
+    choices=['전임자에게 인사한다.'];
+    onPick=()=>{ S._predStep=1; render(); };
+  } else if(step===1){
+    text='인사를 들은 그가 가볍게 고개를 끄덕인다.\n\n"그래, 몸 건강히 잘 지내는 것 같아서 다행이구만..."\n\n그는 뭔가 불편한지 주위를 두리번거리다 작게 속삭인다.\n\n"자네, 여기서 일한 지 이제 6일째 되어가고 있지? 내가 자네가 걱정 되어서 하는 말이니 잘 들어주게."';
+    choices=['듣는다.','듣지 않는다.'];
+    onPick=(i)=>{ S._predStep = i===0 ? 2 : 10; render(); };
+  } else if(step===2){
+    text='그의 표정이 잠시 안도하듯 환해진다.\n\n"그래, 잘 생각했어."\n\n그가 조금 더 가까이 다가와 말한다.\n\n"자네도 이쯤되면 알겠지. 여기서 하는 일이라는 게 그냥 빨간 줄 몇 개 긋는 게 아니란 걸."';
+    choices=['계속 듣는다.'];
+    onPick=()=>{ S._predStep=3; render(); };
+  } else if(step===3){
+    text='"순찰실 캐비닛 안쪽에 사직서가 있어. 원래 열흘 이상 근무한 사람한테만 그들이 알려주는 거지만..."\n\n그는 눈치를 보듯 다시 한 번 주위를 둘러본다.\n\n"거기에 자네 이름을 적어. 그리고 우체통에 부치면 다음 날에 퇴사가 되어 있을 거야."';
+    choices=['알려줘서 고맙다고 말한다.'];
+    onPick=()=>{ S._predStep=4; render(); };
+  } else if(step===4){
+    text='감사인사를 들은 그 자는 더 이상 말을 꺼내지 않고 빠르게 자리를 뜬다.';
+    choices=['정비를 시작한다.'];
+    onPick=()=>{ S.knowsResignation=true; S.screen='day_rules'; render(); };
+  } else {
+    text='거절당한 그는 조금 몸을 움찔거리듯 떤다.\n\n"그, 내가 위험을 무릅쓰고 알려주러 온 건데... 거 참, 버릇 없기는!"\n\n그는 버럭 화를 내고서는 자리를 뜬다.';
+    choices=['정비를 시작한다.'];
+    onPick=()=>{ S.knowsResignation=false; S.screen='day_rules'; render(); };
+  }
+  app.appendChild(el(`${hud()}<div class="card narr">${text}</div><div id="predChoices"></div>`));
+  const box=$('predChoices');
+  choices.forEach((label,i)=>{
+    const b=document.createElement('button'); b.textContent=label;
+    b.onclick=()=>onPick(i);
+    box.appendChild(b);
+  });
+},
+
+cabinet(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">정비를 마치고 나서려는데, 순찰실 구석의 낡은 캐비닛이 눈에 들어온다.</div>
+    <button id="cabOpen">캐비닛을 열어본다</button>
+    <button id="cabSkip">열지 않는다</button>
+  `));
+  $('cabOpen').onclick=()=>{ S.screen='cabinet_open'; render(); };
+  $('cabSkip').onclick=()=>{ S.screen='kim_intro'; render(); };
+},
+
+cabinet_open(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">오래되어 변색된 종이 봉투가 나온다. 입구는 단단히 밀봉되어 있고, 겉면에는 「사직서」라고 적혀 있다.</div>
+    <button id="resignUse">사용한다</button>
+    <button id="resignSkip">사용하지 않는다</button>
+  `));
+  $('resignUse').onclick=()=>{ S.screen='resign_name'; render(); };
+  $('resignSkip').onclick=()=>{ S.screen='kim_intro'; render(); };
+},
+
+resign_name(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">봉투를 뜯으니 안쪽에 빈칸이 하나 있다. 이름을 적으라는 듯하다.</div>
+    <div class="card">
+      <input id="resignInput" placeholder="이름" style="width:100%;padding:10px;background:#1b1b1e;border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:1rem">
+    </div>
+    <button id="resignSubmit">적은 이름으로 봉투를 닫는다</button>
+  `));
+  $('resignSubmit').onclick=()=>{
+    const v=$('resignInput').value.trim();
+    if(!v){ $('resignInput').style.borderColor='var(--red)'; return; }
+    S.resignationSubmitted=true;
+    S.resignationCorrect=(v===S.name);
+    S.screen='resign_done'; render();
+  };
+},
+
+resign_done(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">봉투를 단단히 봉하고, 정비를 마친 뒤 우체통에 사직서를 넣는다.
+서늘한 밤바람이 손끝을 스친다.</div>
+    <button id="afterResign">만물상으로 향한다</button>
+  `));
+  $('afterResign').onclick=()=>{ S.screen='kim_intro'; render(); };
+},
+
+env_open(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">품에서 봉투를 꺼내 열어본다.
+
+안에는 얼룩 하나 없는 깨끗한 사직서가 들어 있다.</div>
+    <button id="envUse">사용한다</button>
+    <button id="envSkip">사용하지 않는다</button>
+  `));
+  $('envUse').onclick=()=>{ S.screen='env_name'; render(); };
+  $('envSkip').onclick=()=>{ S.screen=S._envReturn||'day_rules'; render(); };
+},
+
+env_name(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">깨끗한 사직서에는 빈칸이 하나 있다. 이름을 적으라는 듯하다.</div>
+    <div class="card">
+      <input id="envInput" placeholder="이름" style="width:100%;padding:10px;background:#1b1b1e;border:1px solid var(--border);color:var(--text);font-family:inherit;font-size:1rem">
+    </div>
+    <button id="envSubmit">적은 이름으로 봉투를 닫는다</button>
+  `));
+  $('envSubmit').onclick=()=>{
+    const v=$('envInput').value.trim();
+    if(!v){ $('envInput').style.borderColor='var(--red)'; return; }
+    S.cleanUsed=true; S.cleanCorrect=(v===S.name); S._cleanDay=S.day;
+    S.screen='env_done'; render();
+  };
+},
+
+env_done(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">봉투를 단단히 봉하고, 정비를 마친 뒤 우체통에 사직서를 넣는다.
+서늘한 밤바람이 손끝을 스친다.</div>
+    <button id="envBack">정비를 이어간다</button>
+  `));
+  $('envBack').onclick=()=>{ S.screen=S._envReturn||'day_rules'; render(); };
+},
+
+true1(){
+  app.appendChild(el(`
+    ${hud()}
+    ${pixelArtwork('phone','휴대전화에 도착한 근무 종료 통보')}
+    <h2 style="color:var(--red);margin-top:24px">트루엔딩1. [13일의 근무일]</h2>
+    <div class="card narr">13일까지의 일을 마쳤다.
+
+'귀하의 성실한 근무 태도를 본사는 높게 평가하였으나 내부 사정으로 인해 해당 직무를 더 이상 유지하지 못하게 되었음을 알려드립니다.'
+
+어째서인지 회사에서는 더 이상의 추가 근무는 필요하지 않다는 문자와 함께 계좌로 13일치 임금을 입금해 주었다.
+
+다시 그 동네를 찾아가 보려고도 했으나 이상하게도 길을 찾을 수가 없었다.</div>
+  `));
+  app.appendChild(endGameNav());
+},
+
+ending5(){
+  if((S._e5Phase||0)===0){
+    app.appendChild(el(`
+      ${hud()}
+      ${pixelArtwork('trap','골목의 출구를 막은 그림자')}
+      <h2 style="color:var(--red);margin-top:24px">엔딩5. 내가 무시하라고 그랬잖아.</h2>
+      <div class="card narr">13일까지의 일을 마쳤다.
+
+일을 끝내고 퇴근을 하려고 했다.
+
+그러나 이상하게도 길을 걷고 또 걸어도 동네의 출구로 나아가지 않았다.</div>
+      <button id="e5Next">계속한다</button>
+    `));
+    $('e5Next').onclick=()=>{ S._e5Phase=1; render(); };
+  } else {
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">"갇혀버렸네. 뭐 안지킨 수칙이라도 있어?"
+
+떠나려는지 짐을 싼 만물상의 그 남자가 멀찍이서 바라본다.
+
+그는 자루를 바닥에 내려 두고는 입구를 연다.
+
+"여기 계속 있을 바에야... 이쪽에 들어오는건 어때?"</div>
+    `));
+    app.appendChild(endGameNav());
+  }
+},
+
+true2(){
+  app.appendChild(el(`
+    ${hud()}
+    ${pixelArtwork('dawn','골목 너머로 밝아오는 새벽')}
+    <h2 style="color:var(--red);margin-top:24px">트루엔딩2. [일상으로]</h2>
+    <div class="card narr">사직서가 수료 된 다음날.
+
+회사에서는 근무 시간을 책정해 계좌로 돈을 입금해주었다.
+
+그 모든 ${S._cleanDay}일 간의 일들이 전부 꿈만 같이 느껴진다.
+
+당분간은 문 앞의 붉은 선들을 보지 않아도 되겠지.</div>
+  `));
+  app.appendChild(endGameNav());
+},
+
+handover(){
+  app.appendChild(el(`
+    <div class="card narr">"고생 많을 거야. 근데 별거 없어. 보이면 긋고, 안 보이면 그냥 지나가면 돼."
+
+그는 낡은 순찰복과 붉은 선을 그을 도구를 건네고는, 뒤도 안 돌아보고 골목 저편으로 사라졌다.
+당신은 그의 뒷모습이 완전히 사라질 때까지 그 자리에 서 있었다.
+${playerNameMarkup(S.name)}, 이제 당신 차례다.</div>
+    <button id="goBtn">장비보관소로 간다</button>
+  `));
+  $('goBtn').onclick=()=>{
+    S._drawerPool=shuffle(DRAWER_ITEMS).slice(0,2);
+    S._equipNext='day1_intro';
+    S._maintPool=S._drawerPool; S._maintSnapshot=takeSnap();
+    S._history[1]={snapshot:S._maintSnapshot, retryArgs:[1,2,3,12], extra:{}};
+    S.screen='equip1'; render();
+  };
+},
+
+equip1(){
+  const full=S.items.length>=S.slots;
+  app.appendChild(el(`
+    ${hud()}
+    <h2>장비보관소 — 서랍 2개, 도구는 하나</h2>
+    <div class="sub">둘 중 하나만 챙길 수 있습니다.${full?` 장비 슬롯이 가득 차 있어, 새 장비를 고르면 <b>${S.items[0].name}</b>을(를) 내려놓게 됩니다.`:''}</div>
+    <div class="card" id="drawers"></div>
+  `));
+  const d=$('drawers');
+  S._drawerPool.forEach(it=>{
+    const b=document.createElement('button');
+    b.innerHTML=`<b>${it.name}</b>${statPreview(it)}<span style="font-size:.85rem;color:var(--dim)">${it.desc}</span>`;
+    b.onclick=()=>{
+      if(full) removeItem(S.items[0]);
+      addItem(it);
+      S.screen=S._equipNext||'day1_intro'; render();
+    };
+    d.appendChild(b);
+  });
+  if(full){
+    const k=document.createElement('button');
+    k.textContent='아무것도 가져가지 않는다 (현재 장비 유지)';
+    k.onclick=()=>{S.screen=S._equipNext||'day1_intro'; render();};
+    d.appendChild(k);
+  }
+},
+
+day1_intro(){
+  app.appendChild(el(`
+    ${hud()}
+    <h2>1일차 · 자정</h2>
+    <div class="card narr">시계가 자정을 넘긴다. 정비 시간이 끝났다.
+남동쪽 순찰실 문틈으로 당신은 골목을 바라본다. 오늘 밤, 이 길을 따라 북서쪽까지 걸어야 한다.
+손에 쥔 붉은 선 도구가 유난히 무겁게 느껴진다.</div>
+    <button id="startBtn">순찰을 시작한다</button>
+  `));
+  $('startBtn').onclick=()=>{startPatrol(1,2,3,12);};
+},
+
+patrol(){
+  const h=S.houses[S.hIndex];
+  const remainingChecks=maxChecks()-S.checksThisHouse;
+  const hh=String(S.hour+1).padStart(2,'0');
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day}일차 순찰 · 현재 시각 ${hh}:00 · ${S.hIndex+1}/${S.houses.length}번째 집</h2>
+    ${S.notice?`<div class="card" style="padding:10px 14px;font-size:.9rem">${S.notice}</div>`:''}
+    <div class="card narr">${h.log.join('\n\n')}</div>
+    <div class="card">
+      <div class="sub" style="margin-bottom:10px">이 집에서 남은 판정 횟수: ${remainingChecks}</div>
+      <div class="row">
+        ${h.backyard?'<button id="backyardBtn">집의 뒷마당을 살펴본다<br><small>시야 · 집 뒤편으로 이어지는 길</small></button>':`<button data-c="observe" ${remainingChecks<=0?'disabled':''}>관찰력 판정<br><small>시야 · 형체, 빛, 변화</small></button>`}
+        <button data-c="hearing" ${remainingChecks<=0?'disabled':''}>듣기 판정<br><small>청각 · 소리, 기척</small></button>
+        <button data-c="instinct" ${remainingChecks<=0?'disabled':''}>직감 판정<br><small>설명 못 할 느낌 · 오한, 기운</small></button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button id="lineBtn">🔴 레드라인을 친다</button>
+        <button id="passBtn">그냥 지나간다</button>
+      </div>
+      ${S.candyCharges>0?'<button id="candyBtn">사탕을 먹는다 (정신력 +1, 1회용)</button>':''}
+    </div>
+  `));
+  app.querySelectorAll('[data-c]').forEach(b=>{
+    b.onclick=()=>doCheck(b.dataset.c);
+  });
+  if(h.backyard) $('backyardBtn').onclick=()=>{ S._bkPhase=0; S.screen='backyard_event'; render(); };
+  $('lineBtn').onclick=()=>resolveHouse(true);
+  $('passBtn').onclick=()=>resolveHouse(false);
+  if(S.candyCharges>0) $('candyBtn').onclick=()=>{
+    S.candyCharges=0; S._mindLoss=Math.max(0,(S._mindLoss||0)-1);
+    S.items=S.items.filter(it=>it.consumable!=='candy');
+    render();
+  };
+},
+
+day_summary(){
+  const mind=LV('mind')-(S._mindLoss||0);
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day}일차 종료</h2>
+    ${S.notice?`<div class="card" style="padding:10px 14px;font-size:.9rem">${S.notice}</div>`:''}
+    <div class="card narr">07:00. 북서쪽 순찰실 문을 닫는다. 창밖이 서서히 밝아온다.
+이번 순찰에서 붉은 주화 ${S._earnedCoins||0}개를 얻었다. 정신력은 ${mind}로 남았다.
+${mind<=3?'\n손이 아직도 떨린다.':''}</div>
+    <button id="nextBtn">${S.day+1}일차로</button>
+  `));
+  $('nextBtn').onclick=()=>{
+    S._mindLoss=Math.max(0,(S._mindLoss||0)-1);
+    S.restNotice='하루 몸을 뉘인 덕분인지, 정신이 한결 안정을 되찾은 것 같다. (정신력 +1)';
+    S.day++;
+    S._maintSnapshot=takeSnap();
+    const dc0=DAY_CFG[S.day]||{a:0,b:0,dc:0};
+    S._history[S.day]={snapshot:S._maintSnapshot, retryArgs:[S.day,dc0.a,dc0.b,dc0.dc],
+      extra:{knowsResignation:S.knowsResignation, resignationSubmitted:S.resignationSubmitted, resignationCorrect:S.resignationCorrect}};
+    if(S.day===6){ S._predStep=0; S.screen='predecessor_event'; }
+    else if(S.day===9){ S._d9Phase=0; saveGame(); S.screen='day9_start'; }
+    else { S.screen='day_rules'; }
+    render();
+  };
+},
+
+day_rules(){
+  const r=DAY_RULES[S.day];
+  const openLine=(S.day===7 && S.knowsResignation)?'퇴사의 유혹을 뿌리치고 출근하는 일곱째 날이다.\n\n':'';
+  const body = r.dense
+    ? `<span style="font-size:.85rem;line-height:1.5">${Array(36).fill(r.dense).join(' ')}</span>`
+    : r.plain
+      ? r.plain
+      : `「오늘의 추가 수칙」
+${r.rules.map(x=>'・ '+x).join('\n')}${r.noRange?'':`
+・ 오늘 예상 이상현상 발생 구간: ${DAY_CFG[S.day].a} ~ ${DAY_CFG[S.day].b}건.`}`;
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day}일차 · 추가 수칙서</h2>
+    ${S.restNotice?`<div class="card" style="padding:10px 14px;font-size:.9rem">${S.restNotice}</div>`:''}
+    <div class="card narr">${openLine}${r.intro}
+
+${body}</div>
+    <button id="freeBtn">장비보관소로 간다</button>
+  `));
+  S.restNotice='';
+  $('freeBtn').onclick=()=>{
+    S._drawerPool=shuffle(DRAWER_ITEMS.filter(x=>!S.items.some(i=>i.id===x.id))).slice(0,2);
+    S._equipNext=(S.day===6 && S.knowsResignation) ? 'cabinet' : 'kim_intro';
+    S._kimStep=0; S._kim7Phase=0; S._kim10Phase=0; S._k8=null; S._maintPool=S._drawerPool;
+    S.screen='equip1'; render();
+  };
+},
+
+kim_intro(){
+  S.slots=2;
+  if(S.kimGone){
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">오늘은 그 남자가 보이지 않는다.</div>
+      <button id="goneKimBtn">정비를 마친다</button>
+    `));
+    $('goneKimBtn').onclick=()=>{S.screen='day_intro';render();};
+    return;
+  }
+  if(S.day===8){ kim8Event(); return; }
+  if(S.day===4){
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">오늘은 그 남자가 보이지 않는다.</div>
+      <button id="noKimBtn">정비를 마친다</button>
+    `));
+    $('noKimBtn').onclick=()=>{S.screen='day_intro';render();};
+    return;
+  }
+  if(S.day===6){ kimScene(KIM6); return; }
+  if(S.day===5){ kimScene(KIM5); return; }
+  if(S.day===7){ kim7Scene(); return; }
+  if(S.day===10){ kim10Scene(); return; }
+  if(S.day===11){ kim11Scene(); return; }
+  if(S.day===13){ kim13Scene(); return; }
+  if(S.day>7){
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">그 사람은 오늘도 같은 자리에서 진열대를 펼쳐놓고 있다.</div>
+      <button id="shopBtn7">만물상을 살펴본다</button>
+    `));
+    $('shopBtn7').onclick=goShop;
+    return;
+  }
+  if(S.day>=3){ kimScene(KIM3); return; }
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">골목 어귀에 낯선 그림자가 서 있다. 검은 머리, 노란 눈, 훤칠한 장신.
+검은 한복 위에 겉은 검고 속은 붉은 도포를 걸친 남성이였다. 서른 중반쯤으로 보이지만 확신할 수 없다.
+
+"오, 그래서, 그 놈들이 새 순찰자를 기어코 뽑았군?"
+
+"보아하니 붉은 주화를 좀 얻은 듯한데, 물건 좀 사지 않을래?"
+
+"음, 그 놈들이 주는 장비가 이미 있다고? 손은 두 개니 장비도 두 개 쓰면 되는 거 아닌가."
+
+"자자, 그럼 골라봐. 이 중 하나만 고르면 후딱 팔아주지."</div>
+    <div class="card" style="padding:10px 14px;font-size:.9rem">장비 슬롯이 2개로 늘어났다.</div>
+    <button id="shopBtn">만물상을 살펴본다</button>
+  `));
+  $('shopBtn').onclick=goShop;
+},
+
+shop(){
+  const full=S.items.length>=S.slots;
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day>=10?'김솔의 ':''}만물상</h2>
+    ${S._kimSmile?'<div class="card narr">그가 의미심장한 미소를 지었다.</div>':''}
+    <div class="sub">보유 주화: <span class="coin">${S.coins}</span> · 오늘은 하나만 살 수 있다.${full?` 장비 슬롯이 가득 차 있어, 장비를 사면 <b>${S.items[0].name}</b>을(를) 내려놓게 된다. (뽑기는 슬롯을 쓰지 않는다)`:''}</div>
+    <div class="card" id="shopCard"></div>
+    <button id="skipBtn">사지 않고 나선다</button>
+  `));
+  const c=$('shopCard');
+  S._shopPool.forEach(it=>{
+    const b=document.createElement('button');
+    const price=shopPrice(it);
+    const afford=S.coins>=price;
+    b.disabled=!afford;
+    b.innerHTML=`<b>${it.name}</b> <span class="coin">${price<it.cost?'<s style="color:var(--dim)">'+it.cost+'</s> ':''}${price}주화</span>${statPreview(it)}<span style="font-size:.85rem;color:var(--dim)">${it.desc}</span>`;
+    b.onclick=()=>{
+      S.coins-=price;
+      if(it.consumable==='fortune'){
+        if(S._fortuneDay!==S.day){
+          const anomIdx=S._pendingHouses.map((h,i)=>h.isAnomaly?i+1:null).filter(v=>v!==null);
+          S._fortuneN=pick(anomIdx); S._fortuneDay=S.day;
+        }
+        const n=S._fortuneN;
+        S.fortuneHint=`뽑기를 펼치니 이런 문구가 적혀 있다 — "오늘 밤, ${n}번째로 마주칠 집을 각별히 조심하라."`;
+      } else {
+        if(S.items.length>=S.slots) removeItem(S.items[0]);
+        addItem(it);
+      }
+      S._kimSmile=false; S.screen='day_intro'; render();
+    };
+    c.appendChild(b);
+  });
+  $('skipBtn').onclick=()=>{S._kimSmile=false; S.screen='day_intro';render();};
+},
+
+day_intro(){
+  const c=DAY_CFG[S.day];
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day}일차 · 자정</h2>
+    <div class="card narr">${(c.noKim||S.kimGone)?'':'그 사람은 남은 물건을 챙겨 골목 저편으로 사라졌다. 그가 서 있던 자리엔 발자국도 남지 않았다.\n'}${c.midnight}</div>
+    ${S.fortuneHint?`<div class="card" style="padding:10px 14px;font-size:.9rem;border-color:var(--coin)">${S.fortuneHint}</div>`:''}
+    <button id="startBtn2">순찰을 시작한다</button>
+  `));
+  $('startBtn2').onclick=()=>{
+    const houses=S._pendingHouses||genHouses(c.a,c.b,c.dc);
+    S._pendingHouses=null; S.fortuneHint='';
+    startPatrol(S.day,c.a,c.b,c.dc,houses);
+  };
+},
+
+ending(){
+  const mind=LV('mind')-(S._mindLoss||0);
+  const nights=['','첫째','이틀째','사흘째','나흘째','닷새째','엿새째','이레째','여드레째','아흐레째','열흘째','열하루째','열이틀째','열사흘째'];
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day}일차 순찰 종료</h2>
+    ${pixelArtwork('dawn','순찰 종료 후의 새벽')}
+    ${S.notice?`<div class="card" style="padding:10px 14px;font-size:.9rem">${S.notice}</div>`:''}
+    <div class="card narr">07:00. 붉은 선을 다 그은 골목 뒤로 해가 뜬다. ${nights[S.day]} 밤이 끝났다.
+당신은 살아남았다. 정신력 ${mind}, 보유 주화 ${S.coins}.
+
+${S.day+1}일차 이야기는 아직 쓰이지 않았다 — 다음 편에 계속.</div>
+  `));
+  app.appendChild(endGameNav());
+},
+
+resign_ending(){
+  const step=S._resignEndStep||0;
+  if(step===0){
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">마지막 퇴근을 마치고 집에 돌아왔다. 햇살이 내리쬐는 거리는 오랜만이다.
+
+당신은 푹신한 침대에 몸을 눕힌다. 어째선지 평소보다 조금 더 피곤한 날이다.
+
+그렇게 하루를 꼬박 자고 일어나니 어느새 해가 저물어 있었다.</div>
+      <button id="goOut">출출함을 느끼고 밖으로 나가본다</button>
+    `));
+    $('goOut').onclick=()=>{ S._resignEndStep=1; render(); };
+  } else {
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">문을 열자 이제는 익숙한 밤의 거리가 보인다.
+
+무심코 고개를 돌려 문을 바라보자
+
+그곳에는 붉은 선이 그어져 있었다.</div>
+      ${pixelArtwork('ending-redline','현관에 그어진 붉은 선')}
+      <h2 style="color:var(--red);margin-top:24px">엔딩 2. 레드라인</h2>
+      <div class="card narr">당신을 대체할 사람은 많았다.</div>
+    `));
+    app.appendChild(endGameNav());
+  }
+},
+
+day9_start(){
+  app.appendChild(el(`
+    ${hud()}
+    ${S.restNotice?`<div class="card" style="padding:10px 14px;font-size:.9rem">${S.restNotice}</div>`:''}
+    <div class="card narr">9일차의 날이 되었다. 오늘 출근을 해야할까?</div>
+    <button id="d9Go">출근한다</button>
+    <button id="d9Skip">하지 않는다</button>
+  `));
+  S.restNotice='';
+  $('d9Go').onclick=()=>{ S._d9Phase=0; S.screen='day9_room'; render(); };
+  $('d9Skip').onclick=()=>{ S.d9Worked=false; enterDay10(); };
+},
+
+day9_room(){
+  if((S._d9Phase||0)===0){
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">순찰실은 여느 때 처럼 똑같은 모습이다.
+
+늘 보이던 그 남자는 보이지 않는다.
+
+우편물에는 늘상 보이던 추가 수칙서가 있다.</div>
+      <button id="d9Read">추가 수칙서 열람</button>
+    `));
+    $('d9Read').onclick=()=>{ S._d9Phase=1; render(); };
+  } else {
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card" style="text-align:center;padding:24px 16px">
+        <span style="font-family:'Segoe Script','Comic Sans MS',cursive;font-style:italic;font-size:1.15rem;color:#fff;letter-spacing:1px">오늘은 밖으로 나가지 마십시오</span>
+      </div>
+      <button id="d9Equip">장비보관소로 간다</button>
+    `));
+    $('d9Equip').onclick=()=>{
+      S._drawerPool=shuffle(DRAWER_ITEMS.filter(x=>!S.items.some(i=>i.id===x.id))).slice(0,2);
+      S._equipNext='day9_go';
+      S.screen='equip1'; render();
+    };
+  }
+},
+
+day9_go(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">자정. 붉은 선 도구를 쥔다.</div>
+    <button id="d9Out">순찰 나간다</button>
+    <button id="d9Stay">나가지 않는다</button>
+  `));
+  $('d9Out').onclick=()=>{ S._end3v='out'; S._end3Lead=''; S.screen='ending3'; render(); };
+  $('d9Stay').onclick=()=>{ S._h9={round:0,phase:'act',result:''}; S.screen='day9_hold'; render(); };
+},
+
+day9_hold(){
+  const h=S._h9;
+  if(h.phase==='act'){
+    app.appendChild(el(`
+      ${hud()}
+      <h2>9일차 · 순찰실 안 · ${h.round+1}/3번째 순찰</h2>
+      <div class="card narr">${H9[h.round]}</div>
+      <div class="card">
+        <div class="sub" style="margin-bottom:10px">문 밖의 상대와 대항 판정을 한다. 이기지 못하면 순찰실 문에 레드라인이 그어진다. 판정할 감각을 고르십시오.</div>
+        <div class="row">
+          <button data-h9="observe">관찰력 판정<br><small>시야 · 형체, 빛, 변화</small></button>
+          <button data-h9="hearing">듣기 판정<br><small>청각 · 소리, 기척</small></button>
+          <button data-h9="instinct">직감 판정<br><small>설명 못 할 느낌 · 오한, 기운</small></button>
+        </div>
+      </div>
+    `));
+    app.querySelectorAll('[data-h9]').forEach(b=>b.onclick=()=>doHold(b.dataset.h9));
+  } else {
+    app.appendChild(el(`
+      ${hud()}
+      <h2>9일차 · 순찰실 안 · ${h.round+1}/3번째 순찰</h2>
+      <div class="card narr">${H9[h.round]}</div>
+      <div class="card narr">${h.result}</div>
+      <button id="d9Next">${h.round>=2?'계속한다':'다음 순찰을 기다린다'}</button>
+    `));
+    $('d9Next').onclick=()=>{
+      if(h.round>=2){
+        S.d9Worked=true; S.coins+=5; S.screen='day9_end'; render();
+      } else { h.round++; h.phase='act'; render(); }
+    };
+  }
+},
+
+day9_end(){
+  app.appendChild(el(`
+    ${hud()}
+    <div class="card narr">벽시계는 어느새 7시를 가리키고 있었다.</div>
+    <div class="card" style="padding:10px 14px;font-size:.9rem"><span class="coin">붉은 주화 +5</span></div>
+    <button id="d9Ten">10일차로</button>
+  `));
+  $('d9Ten').onclick=()=>enterDay10();
+},
+
+day10_gift(){
+  app.appendChild(el(`
+    ${hud()}
+    ${S.restNotice?`<div class="card" style="padding:10px 14px;font-size:.9rem">${S.restNotice}</div>`:''}
+    <div class="card narr">순찰실 문 앞에 무언가 떨어져 있다.
+
+깨진 거울 조각 하나.</div>
+    <div class="card" style="padding:10px 14px;font-size:.9rem">
+      <b>거울 조각</b> 획득 — 무언가를 비춘다. 진짜보다 더 진짜 같다.<br>
+      <span style="color:var(--dim)">정신력 최대치 +1 · 슬롯을 차지하지 않는다</span>
+    </div>
+    <button id="d10Rules">수칙서를 확인한다</button>
+  `));
+  S.restNotice='';
+  $('d10Rules').onclick=()=>{ S.screen='day_rules'; render(); };
+},
+
+ending3(){
+  app.appendChild(el(`
+    ${hud()}
+    ${S._end3v==='mimic'&&S._end3Lead?`<div class="card narr">${S._end3Lead}</div>`:''}
+    ${pixelArtwork('ending3','그림자에 잠식된 골목')}
+    <h2 style="color:var(--red);margin-top:24px">엔딩3</h2>
+    <div class="card narr">${S._end3v==='mimic'?'가끔은 남들의 모습을 따라하고 싶은 사람이 있죠.':'오늘은 당신이 순찰하는 날이 아닙니다.'}</div>
+  `));
+  app.appendChild(endGameNav());
+},
+
+next_wait(){
+  app.appendChild(el(`
+    ${hud()}
+    ${pixelArtwork('dawn','순찰 종료 후의 새벽')}
+    <h2>${S.day}일차</h2>
+    <div class="card narr">${S._waitText?S._waitText+'\n\n':''}${S.day}일차 이야기는 아직 쓰이지 않았다 — 다음 편에 계속.</div>
+  `));
+  app.appendChild(endGameNav());
+},
+
+note_event(){
+  const step=S._noteStep||0;
+  if(step===0){
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">모든 순찰을 마친 뒤 순찰실로 되돌아가는 길이다.
+
+어둠 속에서 누군가가 순찰실 앞에 서 있다. 그 사람은 순찰실 앞에 무언가를 두고 간다.</div>
+      <button id="noteLook">자세히 살펴본다</button>
+    `));
+    $('noteLook').onclick=()=>{ S._noteStep=1; render(); };
+  } else {
+    app.appendChild(el(`
+      ${hud()}
+      <div class="card narr">바닥에는 쪽지가 떨어져 있다. 찢겨진 종이 위로 급하게 휘갈겨 적은 손글씨가 보인다.</div>
+      <div class="card" style="text-align:center;padding:24px 16px">
+        <span style="font-family:'Segoe Script','Comic Sans MS',cursive;font-style:italic;font-size:1.15rem;color:#fff;letter-spacing:1px">
+          9일째가 되는 날,<br>순찰실을 나오지 마시오
+        </span>
+      </div>
+      <button id="noteNext">쪽지를 챙긴다</button>
+    `));
+    $('noteNext').onclick=()=>{ S._noteDone=true; finishPatrol(); };
+  }
+},
+
+backyard_event(){
+  const ph=S._bkPhase||0;
+  const hh=String(S.hour+1).padStart(2,'0');
+  let body, choices, next;
+  if(ph===0){
+    body='집의 뒤편에는 이름 모를 남자가 서 있다. 그는 친절한 미소를 지은채로 손에 봉투를 쥐고 있었다.\n\n'+npc('"안녕하시오, 이름 모를 순찰자. 나는 그대를 돕기 위해 왔소."');
+    choices=['누구냐고 묻는다'];
+    next=()=>{ S._bkPhase=1; render(); };
+  } else if(ph===1){
+    body=npc('"그것을 설명하기엔 시간이 없소. 그대도 느끼고 있겠지. 날이 갈 수록 힘들어지고 있다는걸."')+'\n\n그 자는 손에 들린 봉투를 건낸다.\n\n'+npc('"캐비닛 안에 든 것은 오래 전에 오염되어 있던 것이오. 그러니 이걸 사용하는게 좋을 것이오."');
+    choices=['봉투를 받아든다.','봉투를 받아들지 않는다'];
+    next=i=>{ if(i===0){ S.safeLetter=true; S._bkPhase=2; } else { S._bkPhase=3; } render(); };
+  } else if(ph===2){
+    body='친절한 남자는 환하게 웃으며 모퉁이로 사라진다.';
+    choices=['계속 순찰한다'];
+    next=()=>{ S._backyardDone=true; S.screen='patrol'; render(); };
+  } else {
+    body=npc('"...그게 그대의 선택이라면."')+'\n\n남자는 안타까운 표정을 짓더니 그만 사라진다.';
+    choices=['계속 순찰한다'];
+    next=()=>{ S._backyardDone=true; S.screen='patrol'; render(); };
+  }
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day}일차 순찰 · 현재 시각 ${hh}:00 · 집 뒤편</h2>
+    <div class="card narr">${body}</div>
+    <div id="bkChoices"></div>
+  `));
+  choices.forEach((label,i)=>{
+    const b=document.createElement('button'); b.textContent=label;
+    b.onclick=()=>next(i);
+    $('bkChoices').appendChild(b);
+  });
+},
+
+black_event(){
+  const ph=S._blackPhase||0;
+  const hh=String(S.hour+1).padStart(2,'0');
+  if(ph===0){
+    app.appendChild(el(`
+      ${hud()}
+      <h2>${S.day}일차 순찰 · 현재 시각 ${hh}:00</h2>
+      <div class="card narr">길가에 검은 사람이 서 있다. 기다란 검은 사람.
+
+그는 기다란 팔을 들어 손을 흔들고 있다. 길고 검은 팔.</div>
+      <button id="blkGo">다가간다</button>
+      <button id="blkNo">다가가지 않는다</button>
+    `));
+    $('blkGo').onclick=()=>{ S._blackPhase=1; S.note11=true; render(); };
+    $('blkNo').onclick=()=>{ S._blackDone=true; S.screen='patrol'; render(); };
+  } else {
+    app.appendChild(el(`
+      ${hud()}
+      <h2>${S.day}일차 순찰 · 현재 시각 ${hh}:00</h2>
+      <div class="card narr">검은 사람은 손에 쥔 물건을 건내준다.
+
+잘 접힌 쪽지가 단정하게 손에 쥐어졌다.</div>
+      <div class="card" style="text-align:center;padding:20px 16px">
+        <span style="font-family:'Segoe Script','Comic Sans MS',cursive;font-style:italic;font-size:1.15rem;color:#fff;letter-spacing:1px">11. 4.00. <svg width="34" height="30" viewBox="0 0 34 30" style="vertical-align:middle" xmlns="http://www.w3.org/2000/svg"><path d="M3 15 L17 3 L31 15 M7 13 V27 H27 V13 M14 27 V19 H20 V27" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg> &lt;-</span>
+      </div>
+      <div class="card narr">쪽지를 살펴본 사이에 검은 사람은 어디론가 가고 없었다.</div>
+      <button id="blkNext">계속 순찰한다</button>
+    `));
+    $('blkNext').onclick=()=>{ S._blackDone=true; S.screen='patrol'; render(); };
+  }
+},
+
+ne_gone(){
+  const hh=String(S.hour+1).padStart(2,'0');
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day}일차 순찰 · 현재 시각 ${hh}:00</h2>
+    ${S.notice?`<div class="card" style="padding:10px 14px;font-size:.9rem">${S.notice}</div>`:''}
+    <div class="card narr">어제 보았던 북동쪽 순찰실이 오늘은 보이지 않는다.</div>
+    <button id="goneBtn">계속 순찰한다</button>
+  `));
+  $('goneBtn').onclick=()=>{ S._goneDone=true; S.notice=''; S.screen='patrol'; render(); };
+},
+
+door_event(){
+  const d0=S._door, rem=maxChecks()-d0.checks;
+  const hh=String(S.hour+1).padStart(2,'0');
+  const choose=d0.phase==='choose';
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day}일차 순찰 · 현재 시각 ${hh}:00 · 북서쪽 순찰실 앞</h2>
+    ${pixelArtwork('doors','두 개의 순찰실 문')}
+    ${S.notice?`<div class="card" style="padding:10px 14px;font-size:.9rem">${S.notice}</div>`:''}
+    <div class="card narr">${d0.log.join('\n\n')}</div>
+    ${choose?`<div class="card">
+      <div class="sub" style="margin-bottom:10px">남은 판정 횟수: ${rem}</div>
+      <div class="row">
+        <button data-d="observe" ${rem<=0?'disabled':''}>관찰력 판정<br><small>시야 · 형체, 빛, 변화</small></button>
+        <button data-d="hearing" ${rem<=0?'disabled':''}>듣기 판정<br><small>청각 · 소리, 기척</small></button>
+        <button data-d="instinct" ${rem<=0?'disabled':''}>직감 판정<br><small>설명 못 할 느낌 · 오한, 기운</small></button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button id="doorR">오른쪽 문을 열기</button>
+        <button id="doorL">왼쪽 문을 열기</button>
+      </div>
+    </div>`:`<button id="doorDone">순찰실로 들어간다</button>`}
+  `));
+  if(choose){
+    app.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>doDoorCheck(b.dataset.d));
+    $('doorR').onclick=()=>openDoor('right');
+    $('doorL').onclick=()=>openDoor('left');
+  } else {
+    $('doorDone').onclick=()=>{ S._doorDone=true; S.notice=''; finishPatrol(); };
+  }
+},
+
+ne_room(){
+  const n=S._ne, rem=maxChecks()-n.checks;
+  const hh=String(S.hour+1).padStart(2,'0');
+  app.appendChild(el(`
+    ${hud()}
+    <h2>${S.day}일차 순찰 · 현재 시각 ${hh}:00 · 북동쪽</h2>
+    ${pixelArtwork('impossible','존재하지 않는 북동쪽 순찰실')}
+    ${S.notice?`<div class="card" style="padding:10px 14px;font-size:.9rem">${S.notice}</div>`:''}
+    <div class="card narr">${n.log.join('\n\n')}</div>
+    <div class="card">
+      <div class="sub" style="margin-bottom:10px">남은 판정 횟수: ${rem}</div>
+      <div class="row">
+        <button data-n="observe" ${rem<=0?'disabled':''}>관찰력 판정<br><small>시야 · 형체, 빛, 변화</small></button>
+        <button data-n="hearing" ${rem<=0?'disabled':''}>듣기 판정<br><small>청각 · 소리, 기척</small></button>
+        <button data-n="instinct" ${rem<=0?'disabled':''}>직감 판정<br><small>설명 못 할 느낌 · 오한, 기운</small></button>
+      </div>
+      <div class="row" style="margin-top:6px">
+        <button id="neLine">🔴 레드라인을 친다</button>
+        <button id="nePass">그냥 지나간다</button>
+      </div>
+    </div>
+  `));
+  app.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>doNeCheck(b.dataset.n));
+  $('neLine').onclick=()=>{
+    if(!n.redTried){ n.redTried=true; n.log.push('<span class="bad">붉은 선 도구를 문 앞에 대어 보지만, 어째서인지 선이 그어지지 않는다. 이곳에는 레드라인을 칠 수 없다.</span>'); }
+    render();
+  };
+  $('nePass').onclick=()=>{ S._neDone=true; S.notice=''; S.screen='patrol'; render(); };
+},
+
+gameover(){
+  app.appendChild(el(`
+    <h2 style="color:var(--red)">GAME OVER</h2>
+    <div class="card narr">${S._overText||('시야가 흐려진다. 다리에 힘이 풀린다.\n'+playerNameMarkup(S.name)+'은 그 자리에 쓰러졌다. 아무도 그를 발견하지 못했다.')}</div>
+    ${pixelArtwork('madness','비 내리는 골목에 쓰러진 순찰자')}
+    <h2 style="color:var(--red);margin-top:24px">엔딩1. 광인</h2>
+    <div class="card narr">제정신인 사람들은 모르는게 너무 많다.</div>
+  `));
+  app.appendChild(endGameNav());
+},
+};
+
+function restoreSnapshot(){ applySnap(S._daySnapshot); }
+
+function genHouses(minA, maxA, dc){
+  const count=6;
+  const anomN=Math.min(count, rand(minA,maxA));
+  const idx=shuffle([...Array(count).keys()]).slice(0,anomN);
+  const pool=shuffle(FLAVOR_BANK);
+  return Array.from({length:count},(_,i)=>{
+    const isAnomaly=idx.includes(i);
+    const flavor=pool[i%pool.length];
+    return {isAnomaly, dc, flavor, checked:[], log:[flavor.text], resolved:false};
+  });
+}
+
+function startPatrol(day, minA, maxA, dc, existingHouses){
+  S._retryArgs=[day,minA,maxA,dc];
+  S._daySnapshot=takeSnap();
+  const prevH=S._history[day];
+  S._history[day]={
+    snapshot: prevH ? prevH.snapshot : S._daySnapshot,
+    retryArgs:[day,minA,maxA,dc],
+    extra: prevH ? prevH.extra : {knowsResignation:S.knowsResignation, resignationSubmitted:S.resignationSubmitted, resignationCorrect:S.resignationCorrect}
+  };
+  S.houses=existingHouses||genHouses(minA,maxA,dc);
+  S.day=day; S.hIndex=0; S.hour=0; S.checksThisHouse=0; S.usedStats=[]; S.notice=''; S._neDone=false; S._goneDone=false; S._doorDone=false; S._blackDone=false; S._backyardDone=false; S._overText='';
+  S._earnedCoins=0; S._mindLoss=S._mindLoss||0;
+  saveGame();
+  S.screen='patrol'; render();
+}
+
+function doCheck(stat){
+  const h=S.houses[S.hIndex];
+  if(S.checksThisHouse>=maxChecks()) return;
+  S.checksThisHouse++;
+  const roll=rand(1,20);
+  const total=roll+LV(stat);
+  const success=total>=h.dc;
+  const repeat=S.usedStats.includes(stat);
+  S.usedStats.push(stat);
+  let line=`[${CHECK_LABEL[stat]} 판정] 주사위 <span class="roll">${roll}</span> + Lv.${LV(stat)} = ${total} / DC ${h.dc} → `;
+  line+= success?'<span class="ok">판정 성공</span>':'<span class="bad">별다른 변화 없음</span>';
+  h.log.push(line);
+  if(success){
+    if(stat===h.flavor.t){
+      if(h.isAnomaly) h.log.push(repeat ? h.flavor.anomDeep : h.flavor.anomOk);
+      else h.log.push(h.flavor.normalOk);
+    } else {
+      h.log.push(MISS_TEXT[stat]);
+    }
+    if(stat==='observe' && S.day===11 && S.hIndex===3 && S.note11 && !S._backyardDone && !h.backyard){
+      h.backyard=true;
+      h.log.push('집 옆으로 뒷마당에 이어지는 좁은 길이 눈에 들어온다.');
+    }
+  }
+  render();
+}
+
+function resolveHouse(placedLine){
+  const h=S.houses[S.hIndex];
+  const correct=(placedLine===h.isAnomaly);
+  if(correct && placedLine){
+    let gain=1, extra='';
+    if(hasItem('bead') && Math.random()<0.15){ gain=2; extra=' 구슬이 은은하게 빛난다 — 주화가 두 배로 늘었다.'; }
+    S.coins+=gain; S._earnedCoins+=gain;
+    S.notice='<span class="ok">정확했다. 붉은 선이 문 앞에 그어진다. 주화를 '+(gain===2?'두 개':'하나')+' 얻었다.'+extra+'</span>';
+  } else if(!correct){
+    const k=useKkokdu();
+    if(k){
+      S.notice='<span class="ok">판단이 틀렸다. '+k+' (정신력 피해 없음)</span>';
+    } else {
+      S._mindLoss=(S._mindLoss||0)+1;
+      S.notice='<span class="bad">판단이 틀렸다. 등 뒤로 서늘한 기운이 스친다. (정신력 -1)</span>';
+    }
+  } else {
+    S.notice='';
+  }
+  S.hour++;
+  nextHouse();
+}
+
+function doNeCheck(stat){
+  const n=S._ne;
+  if(n.checks>=maxChecks()) return;
+  n.checks++;
+  const dc=DAY_CFG[S.day].dc;
+  const roll=rand(1,20), total=roll+LV(stat), success=total>=dc;
+  let line=`[${CHECK_LABEL[stat]} 판정] 주사위 <span class="roll">${roll}</span> + Lv.${LV(stat)} = ${total} / DC ${dc} → `;
+  line+= success?'<span class="ok">판정 성공</span>':'<span class="bad">별다른 변화 없음</span>';
+  n.log.push(line);
+  if(success) n.log.push(`<span class="redtxt">${NE_TEXT[stat]}</span>`);
+  if(success && stat==='instinct' && !n.shocked){
+    n.shocked=true; S._mindLoss=(S._mindLoss||0)+1;
+    n.log.push('<span class="bad">충격으로 정신이 흔들린다. (정신력 -1)</span>');
+    if(LV('mind')-(S._mindLoss||0)<=0){ S.screen='gameover'; render(); return; }
+  }
+  render();
+}
+
+const DOOR_INTRO='오늘도 열심히 일을 끝냈다. 마지막 순찰을 돈 뒤 북서쪽 순찰실로 돌아가는 길이였다.\n\n당신의 눈이 잘못된 것인지, 순찰실 문이 두개로 보인다.';
+const DOOR_TEXT={
+  observe:'오른쪽의 문에는 희미하게 레드라인이 그려져 있다.',
+  hearing:'오른쪽 문을 누가 긁고 있는 것 같다.',
+  instinct:'<span class="redtxt" style="font-style:italic">"난 오른쪽에 있어"</span>',
+};
+function finishPatrol(){
+  if(S.cleanUsed && S.cleanCorrect && S._cleanDay===S.day){ S.screen='true2'; render(); return; }
+  if(S.day===6 && S.resignationSubmitted && S.resignationCorrect){ S._resignEndStep=0; S.screen='resign_ending'; render(); return; }
+  if(S.day===7 && !S._noteDone){ S._noteStep=0; S.screen='note_event'; render(); return; }
+  if(S.day===13){ S._e5Phase=0; S.screen=S.kimGone?'true1':'ending5'; render(); return; }
+  S.screen = S.day<13 ? 'day_summary' : 'ending'; render();
+}
+function doDoorCheck(stat){
+  const d0=S._door;
+  if(d0.checks>=maxChecks()) return;
+  d0.checks++;
+  const dc=DAY_CFG[S.day].dc;
+  const roll=rand(1,20), total=roll+LV(stat), success=total>=dc;
+  let line=`[${CHECK_LABEL[stat]} 판정] 주사위 <span class="roll">${roll}</span> + Lv.${LV(stat)} = ${total} / DC ${dc} → `;
+  line+= success?'<span class="ok">판정 성공</span>':'<span class="bad">별다른 변화 없음</span>';
+  d0.log.push(line);
+  if(success) d0.log.push(DOOR_TEXT[stat]);
+  render();
+}
+function openDoor(side){
+  const d0=S._door;
+  if(side==='left'){
+    d0.log.push('문고리를 잡고 돌리자 당신에게 익숙한 순찰실의 풍경이 보인다. 여기서는 안전하다.');
+    d0.phase='done'; render(); return;
+  }
+  const hit='문고리를 잡고 돌리자 무언가 당신을 덮친다. 그게 사람이였는지 어둠이였는지는 알 수 없다.';
+  const k=useKkokdu();
+  if(k){
+    d0.log.push(hit,'<span class="ok">'+k+'</span>','다시 정신을 차려보니 당신은 순찰실 바닥에 누워 있었다. 많이 피곤했던 것일까?');
+    d0.phase='done'; render();
+  } else {
+    S._overText=hit+'\n\n생각이 더 이뤄지기 전에 당신의 정신이 끊어진다.\n\n<span class="bad">(정신력 최대치가 하락한다)</span>\n\n[게임 오버]';
+    S.screen='gameover'; render();
+  }
+}
+
+function nextHouse(){
+  const mind=LV('mind')-(S._mindLoss||0);
+  if(mind<=0){ S.screen='gameover'; render(); return; }
+  S.hIndex++; S.checksThisHouse=0; S.usedStats=[];
+  if(S.hIndex>=S.houses.length){
+    if(S.day===5 && !S._doorDone){
+      S._door={checks:0,log:[DOOR_INTRO],phase:'choose'};
+      S.notice=''; S.screen='door_event'; render(); return;
+    }
+    finishPatrol(); return;
+  }
+  if(S.day===4 && S.hIndex===3 && !S._neDone){
+    S._ne={checks:0,log:[NE_INTRO],redTried:false};
+    S.notice=''; S.screen='ne_room'; render(); return;
+  }
+  if(S.day===10 && S.hIndex===4 && !S._blackDone){
+    S.notice=''; S._blackPhase=0; S.screen='black_event'; render(); return;
+  }
+  if(S.day===5 && S.hIndex===3 && !S._goneDone){
+    S.notice=''; S.screen='ne_gone'; render(); return;
+  }
+  S.screen='patrol'; render();
+}
+
+// Presentation-only localization. Game state and saved narrative remain in Korean.
+const LANGUAGE_KEY='redline_language_v1';
+let language='ko';
+try{ if(localStorage.getItem(LANGUAGE_KEY)==='en') language='en'; }catch{}
+const ENGLISH_TEXT={
+  "손전등": "Flashlight",
+  "관찰력 +2. 어둠을 조금 걷어내준다.": "Observation +2. Pushes back a little of the dark.",
+  "사탕": "Candy",
+  "사용 시 정신력 +1. 달달한 맛은 두려움을 잠시 잊게 한다. (1회용)": "Restores 1 Sanity when used. Sweetness lets you forget your fear for a moment. (Single use)",
+  "보청기": "Hearing Aid",
+  "듣기 +2. 반고리관의 친구.": "Hearing +2. A friend to your inner ear.",
+  "네잎클로버": "Four-leaf Clover",
+  "직감 +2. 행운이라는 것도 결국 비과학적인 거다.": "Intuition +2. Luck is unscientific, after all.",
+  "꼭두": "Kkokdu",
+  "잘못 된 판단으로 인한 정신력 피해 감면 (2회). 나무로 깍은 작은 사람이다.": "Absorbs Sanity damage from a wrong judgment (2 uses). A small figure carved from wood.",
+  "구슬": "Jade Bead",
+  "낮은 확률(15%)로 주화 획득시 획득량이 2배가 된다. 옥으로 된 구슬이다.": "A small chance (15%) to double the coins you receive. A bead made of jade.",
+  "반지": "Ring",
+  "직감 +5. 매우 작은 금반지다.": "Intuition +5. A very small gold ring.",
+  "인주": "Seal Ink",
+  "무언가에 눈에 띄는 흔적을 내기 좋다. 사용시 판정 횟수+1.": "Good for leaving a visible mark. Grants +1 check.",
+  "곡옥": "Curved Jade",
+  "조금 흠집이 났지만 아직은 쓸만하다. 정신력 최대치+1.": "A little scratched, but still usable. Maximum Sanity +1.",
+  "방울": "Bell",
+  "직감 +4. 소름이 끼칠 때마다 소리를 낸다.": "Intuition +4. It rings whenever a chill runs through you.",
+  "렌즈": "Lens",
+  "관찰력 +4. 몽골인의 시야가 이런 것일까.": "Observation +4. Is this how keenly Mongolians see?",
+  "걸이": "Ear Ornament",
+  "듣기 +4. 귀에 걸면 귀걸이가 된다.": "Hearing +4. Hang it from your ear, and it becomes an earring.",
+  "뽑기": "Fortune Slip",
+  "오늘의 운세를 알려준다. 간혹 피해야 할 것을 알려주기도 한다.": "Reveals your fortune for the day. Sometimes it tells you what to avoid.",
+  "창문 안쪽으로 푸른 불빛이 깜빡인다.": "A blue light flickers behind the window.",
+  "TV 불빛이다. 소파에 누군가 잠든 실루엣이 보이지만 그저 평범한 거실이다.": "It is the television. You can make out someone asleep on the sofa, but it is an ordinary living room.",
+  "불빛이 아니라 불덩이다. 바라볼수록 점점 커져가는 것 같다.": "It is not a light, but a ball of fire. The longer you watch, the larger it seems to grow.",
+  "불덩이 속에서 무언가가 이쪽을 마주 보고 있다.": "Something inside the fire is looking back at you.",
+  "베란다에 빨래가 널려 있다. 무언가 흔들리는 것 같다.": "Laundry hangs on the balcony. Something seems to be moving.",
+  "젖은 셔츠와 수건이 바람에 흔들릴 뿐이다. 이상한 점은 없다.": "Just wet shirts and towels swaying in the wind. Nothing unusual.",
+  "옷가지 사이로 사람 팔 같은 것이 섞여 흔들리고 있다.": "Something like a human arm sways among the clothes.",
+  "그 팔의 손가락이 당신을 향해 까딱인다.": "The fingers on that arm beckon to you.",
+  "창문 안에 사람 형체가 서 있는 것 같다.": "There seems to be a person standing inside the window.",
+  "다시 보니 옷걸이에 걸린 외투일 뿐이다.": "A second look reveals only a coat on a hanger.",
+  "형체가 당신이 움직일 때마다 계속 이쪽을 향해 있다.": "The figure keeps facing you, no matter where you move.",
+  "다시 보니 그 형체의 얼굴에는 눈이 없다.": "You look again. The figure has no eyes.",
+  "마당에 그림자가 길게 드리워 있다.": "A long shadow stretches across the yard.",
+  "가로등 방향 그대로, 자연스러운 그림자다.": "An ordinary shadow, cast exactly where the streetlight would put it.",
+  "그림자가 가로등 방향과 반대로 누워 있다.": "The shadow lies in the opposite direction from the streetlight.",
+  "그림자의 끝이 천천히 당신 쪽으로 길어진다.": "The tip of the shadow slowly lengthens toward you.",
+  "집 안에서 희미한 소리가 새어 나온다.": "A faint sound seeps out of the house.",
+  "귀를 기울이니 늦은 예능 재방송 소리다. 이상 없다.": "You listen closely. A late-night rerun of a variety show. Nothing unusual.",
+  "소리를 가만히 들어보니 낮은 신음처럼 들린다.": "Listening carefully, it sounds like a low moan.",
+  "신음 사이로 당신의 이름이 섞여 들린다.": "Between the moans, you hear your name.",
+  "2층에서 규칙적인 소리가 들려온다.": "A rhythmic sound comes from the second floor.",
+  "코 고는 소리다. 평범한 밤이다.": "Snoring. An ordinary night.",
+  "일정한 간격으로 벽을 두드리는 소리다.": "Someone is knocking on the wall at regular intervals.",
+  "두드리는 소리가 점점 문 쪽으로 가까워진다.": "The knocking draws closer and closer to the door.",
+  "초인종 쪽에서 작은 소리가 난다.": "A small sound comes from the doorbell.",
+  "바람에 초인종 덮개가 흔들리는 소리였다.": "The wind was rattling the doorbell cover.",
+  "누른 사람도 없는데 초인종이 안쪽에서 저절로 울린다.": "No one has pressed it, but the doorbell rings by itself, from inside.",
+  "초인종 소리 사이사이에 낮은 웃음소리가 섞여 있다.": "Low laughter slips between the chimes.",
+  "집 안에서 무언가 끄는 소리가 들린다.": "Something is being dragged inside the house.",
+  "의자를 끄는 소리다. 누군가 아직 깨어 있을 뿐이다.": "A chair scraping the floor. Someone is still awake, that is all.",
+  "소리가 천장을 따라 문 쪽으로 서서히 다가온다.": "The sound moves slowly along the ceiling toward the door.",
+  "문 너머에서 숨소리가 들린다. 바로 문 뒤다.": "You hear breathing beyond the door. Right behind it.",
+  "이 집 앞에 서자 어쩐지 마음이 가라앉는다.": "Standing in front of this house, you feel your spirits sink.",
+  "그저 늦은 밤의 고요함이다. 불길한 기운은 느껴지지 않는다.": "Only the stillness of late night. You sense nothing ominous.",
+  "가라앉는 게 아니라 짓눌리는 느낌에 가깝다.": "It feels less like sinking than being pressed down.",
+  "누군가 당신을 아래에서 올려다보고 있다는 확신이 든다.": "You are certain someone is looking up at you from below.",
+  "집 앞을 지나는데 묘하게 신경이 쓰인다.": "Something about this house bothers you as you pass.",
+  "곰곰이 짚어봐도 위험한 느낌은 없다. 기분 탓이었다.": "You think it over, but sense no danger. It was your imagination.",
+  "설명할 수는 없지만 틀림없다. 무언가 잘못됐다.": "You cannot explain it, but you are certain. Something is wrong.",
+  "누군가 당신의 이름을 알고 있다는 확신이 든다.": "You are certain someone knows your name.",
+  "갑자기 등골이 서늘해진다.": "A sudden chill runs down your spine.",
+  "밤바람이 차가울 뿐이다. 별일 아니다.": "Only the cold night air. Nothing more.",
+  "숨이 하얗게 나올 만큼 온도가 뚝 떨어진다.": "The temperature drops so sharply that your breath turns white.",
+  "오한이 뼛속까지 스민다. 이 집은 당신이 온 것을 알고 있다.": "The chill seeps into your bones. This house knows you are here.",
+  "이 집 앞에서 발걸음이 느려진다.": "Your steps slow in front of this house.",
+  "단지 피곤해서다. 깊게 생각할 것 없다.": "You are simply tired. No need to think too hard about it.",
+  "발이 떨어지지 않는다. 무언가 당신을 붙잡는 느낌이다.": "You cannot lift your feet. It feels as though something is holding you.",
+  "발밑에서 희미하게 숨소리가 느껴진다.": "You faintly sense breathing beneath your feet.",
+  "눈을 크게 뜨고 살펴봐도 알 수 있는 것이 없다.": "You look as hard as you can, but learn nothing.",
+  "귀를 기울여도 알 수 있는 것이 없다.": "You listen carefully, but learn nothing.",
+  "느낌을 짚어보려 해도 아무것도 잡히지 않는다.": "You try to grasp the feeling, but nothing comes to you.",
+  "자정. 다시 붉은 선 도구를 쥔다. 어제와 같은 길, 그러나 오늘은 무언가 다르다는 예감이 든다.": "Midnight. You take up the red-line tool again. The same route as yesterday, yet you sense that tonight is different.",
+  "자정. 붉은 선 도구를 쥔다. 사흘째 밤. 골목이 어제보다 조금 더 길어진 것 같다.": "Midnight. You take up the red-line tool. The third night. The alley seems a little longer than yesterday.",
+  "자정. 붉은 선 도구를 쥔다. 닷새째 밤.": "Midnight. You take up the red-line tool. The fifth night.",
+  "자정. 붉은 선 도구를 쥔다. 나흘째 밤. 골목이 유난히 조용하다.": "Midnight. You take up the red-line tool. The fourth night. The alley is unusually quiet.",
+  "자정. 붉은 선 도구를 쥔다. 엿새째 밤. 이제는 이 길도 눈감고 걸을 수 있을 것 같다.": "Midnight. You take up the red-line tool. The sixth night. You feel you could walk this route with your eyes closed now.",
+  "자정. 붉은 선 도구를 쥔다. 이레째 밤. 왠지 발걸음이 가볍다.": "Midnight. You take up the red-line tool. The seventh night. Your steps feel strangely light.",
+  "자정. 붉은 선 도구를 쥔다. 여드레째 밤.": "Midnight. You take up the red-line tool. The eighth night.",
+  "자정. 붉은 선 도구를 쥔다. 열흘째 밤.": "Midnight. You take up the red-line tool. The tenth night.",
+  "자정. 붉은 선 도구를 쥔다. 열하루째 밤.": "Midnight. You take up the red-line tool. The eleventh night.",
+  "자정. 붉은 선 도구를 쥔다. 열이틀째 밤.": "Midnight. You take up the red-line tool. The twelfth night.",
+  "자정. 붉은 선 도구를 쥔다. 열사흘째 밤.": "Midnight. You take up the red-line tool. The thirteenth night.",
+  "남동쪽 순찰실 문 밑으로 종이 한 장이 밀어 넣어져 있었다.": "A sheet of paper has been slipped under the door of the southeast patrol room.",
+  "창문에 김이 서린 집은 반드시 두 번 이상 확인할 것.": "Always check a house with fogged windows at least twice.",
+  "개가 짖지 않는 구간은 특히 주의할 것.": "Take particular care in stretches where no dogs bark.",
+  "순찰실 책상 위에 수칙서가 놓여 있었다. 어제와 달리 종이가 눅눅했다.": "A rule sheet lies on the patrol room desk. Unlike yesterday, the paper is damp.",
+  "순찰 중 누군가 당신의 이름을 부르면 돌아보지 말 것. 목소리가 낯익더라도 마찬가지다.": "If someone calls your name during patrol, do not turn around. Even if you recognize the voice.",
+  "순찰실 창문은 열어두지 말 것. 이미 열려 있다면 닫되, 누가 열었는지는 생각하지 말 것.": "Do not leave the patrol room window open. If it is already open, close it, but do not wonder who opened it.",
+  "두 번째 집부터 발소리가 하나 더 늘어날 수 있다. 당신의 것이 아니라면 걸음을 맞추지 말 것.": "From the second house onward, you may hear an extra set of footsteps. If they are not yours, do not match their pace.",
+  "불이 켜진 집이 반드시 사람이 있는 집은 아니다.": "A lit house is not necessarily an occupied house.",
+  "순찰실 문 앞에 수칙서가 놓여 있었다. 종이 귀퉁이가 그을린 듯 검게 말려 있었다.": "A rule sheet lies outside the patrol room door. Its corners are black and curled, as if scorched.",
+  "순찰실의 위치는 계약서에 적힌 그대로다. 오늘은 그 문장을 한 번 더 읽어둘 것.": "The patrol rooms are located exactly where the contract says. Read that sentence once more today.",
+  "정전이 되더라도 전등을 다시 켜려 하지 말 것. 스스로 돌아올 때까지 기다릴 것.": "If the power goes out, do not try to turn the lights back on. Wait for them to return by themselves.",
+  "누군가 당신이 무엇을 봤는지 묻더라도 대답하지 말 것.": "If anyone asks what you saw, do not answer.",
+  "오늘 밤은 다른 날보다 짧게 느껴질 수 있다. 시계를 너무 믿지 말 것.": "Tonight may feel shorter than other nights. Do not trust the clock too much.",
+  "순찰실 책상 위에 수칙서가 놓여 있었다.": "A rule sheet lies on the patrol room desk.",
+  "기본 수칙을 다시 숙지하기실 바랍니다.": "Please familiarize yourself with the basic rules once again.",
+  "순찰실 문틈으로 수칙서 한 장이 밀어 넣어져 있었다. 글씨체가 어제와 미묘하게 다르다.": "A rule sheet has been slipped through the patrol room door. The handwriting is subtly different from yesterday.",
+  "오늘 순찰실 근처에서 낯익은 얼굴을 마주치더라도 크게 동요하지 말 것.": "If you encounter a familiar face near the patrol room today, do not become unduly alarmed.",
+  "순찰실의 비품은 원래 있던 자리, 원래 있던 상태 그대로 둘 것을 권장한다.": "We recommend leaving the patrol room's supplies exactly where and as you found them.",
+  "무언가에 이름을 적어 넣게 되는 상황이 온다면, 반드시 본인의 이름만을 적을 것.": "If you find yourself required to write a name on something, write only your own name.",
+  "오늘 하루가 유난히 길게 느껴지더라도 놀라지 말 것.": "Do not be surprised if today feels unusually long.",
+  "어째서인지 수칙서 위에 신문이 놓여 있다.\n\n「45세의 중년 남성, 오늘 새벽 자택에서 의문사...」": "For some reason, a newspaper lies on top of the rule sheet.\n\n“Man, 45, found dead under mysterious circumstances at home early this morning...”",
+  "오늘은 행운의 날입니다. 추가 수칙은 없습니다.": "Today is a lucky day. There are no additional rules.",
+  "평소 보는 사람을 조심하세요.": "Be wary of the person you see regularly.",
+  "당신은 수칙서를 어기고 있습니다.": "You are breaking the rules.",
+  "아직 글을 읽을 수 있다면 지금이라도 캐비닛을 여십시오": "If you can still read, open the cabinet, even now",
+  "집 뒤편은 순찰 경로가 아닙니다.": "Behind the houses is not part of your patrol route.",
+  "낯선 이가 건네는 물건은 받지 마십시오.": "Do not accept anything a stranger offers you.",
+  "오늘도 평소처럼 순찰하십시오.": "Patrol as usual today.",
+  "오늘은 마지막 근무일입니다. 추가 수칙은 없습니다.": "Today is your last day of work. There are no additional rules.",
+  "이 다음 수칙은 무시하십시오.": "Ignore the next rule.",
+  "간혹 이름이 두 글자인 사내가 개인 정비 시간에 나타나 물건을 팔 것입니다. 그의 물건은 도움이 될 것입니다.": "A man whose name consists of two Korean syllables will sometimes appear during personal preparation time to sell you things. His goods will be helpful.",
+  "귀하는 본 계약의 내용 및 업무 상태를 타인 혹은 타 기관에게 자의적 혹은 타의적으로 발설해서는 안 됩니다.": "You must not disclose the contents of this contract or the conditions of your work to any other person or organization, whether willingly or under coercion.",
+  "순찰 시간 동안 귀하는 단지 내 순찰실을 제약 없이 사용할 권한을 보유합니다. 순찰실은 남동쪽, 북서쪽 두 곳뿐입니다.": "During patrol hours, you have unrestricted use of the patrol rooms within the complex. There are only two patrol rooms: southeast and northwest.",
+  "북동쪽 순찰실은 없다는 걸 기억하십시오.": "Remember that there is no northeast patrol room.",
+  "순찰경로는 남동 → 북서, 남동쪽 순찰실에서 출발해 북서쪽 순찰실로 복귀하는 것을 한 로테이션으로 봅니다.": "The patrol route runs southeast → northwest. One rotation begins at the southeast patrol room and ends at the northwest patrol room.",
+  "이상현상은 00:00시부터 일어납니다. 23:00~00:00는 개인 정비 시간입니다.": "Anomalies begin at 00:00. 23:00~00:00 is personal preparation time.",
+  "장비보관소에는 2개의 서랍 당 하나의 도구가 있습니다. 그중 하나를 고르십시오.": "The equipment room has one tool per pair of drawers. Choose one of them.",
+  "이상현상 발견 시 절대 들어가지 말고, 현관문 앞에 레드라인을 치십시오.": "If you discover an anomaly, never go inside. Draw a red line in front of the entrance door.",
+  "매일 남동쪽 순찰실로 그날의 추가 수칙서가 배달됩니다. 숙지 후 순찰에 임하십시오.": "Each day, additional rules will be delivered to the southeast patrol room. Read them carefully before beginning patrol.",
+  "관찰력": "Observation",
+  "듣기": "Hearing",
+  "직감": "Intuition",
+  "정신력": "Sanity",
+  "붉은 선이 그어진 심야 골목 일러스트": "An illustration of a late-night alley marked with red lines",
+  "순찰실": "Patrol Room",
+  "레드라인 픽셀 일러스트": "REDLINE pixel illustration",
+  "레드라인 도트 일러스트": "REDLINE pixel illustration",
+  "지난 밤에서도 본 그 남성이 물건들을 가지고 다시 찾아왔다. 일부는 처음 보는 것이고 일부는 예전에도 본 익숙한 물건이다.\n\n\"안 죽고 잘 살아있었네? 주화도 꽤 모은 것 같고.\"": "The man you saw last night returns with his goods. Some are unfamiliar; others you have seen before.\n\n“Oh, still alive, are you? Looks like you've collected a fair few coins, too.”",
+  "빈정거리는 거냐고 묻는다": "Ask if he is mocking you",
+  "걱정해주는 거냐고 묻는다": "Ask if he is worried about you",
+  "그 자는 당신의 말에 눈썹을 까딱인다.\n\n\"몇 없는 손님인데, 그쪽이 죽어버리면 나도 곤란하다고. 큰 돈 필요할 일이 좀 있거든.\"": "He raises an eyebrow.\n\n“I don't have many customers. It'd be a problem for me if you died. I happen to need quite a lot of money.”",
+  "그럼 물건을 많이 팔아달라고 말한다.": "Tell him to sell you more things, then.",
+  "당신의 말에 그는 일말의 고민도 없이 고개를 젓는다.\n\n\"그건 안돼. 한꺼번에 많이 빼돌리면 나도 걸려.\"": "He shakes his head without a moment's hesitation.\n\n“Can't do that. If I smuggle too much out at once, they'll catch me.”",
+  "그는 당신의 떨떠름한 표정을 보곤 어깨를 으쓱인다.\n\n\"뭐, 어쨋든 당신이 내 귀한 손님인건 변함이 없으니... 오늘도 한 번 구경 좀 하시겠어?\"": "He shrugs at your displeased expression.\n\n“Well, you're still a valued customer of mine, either way... Care to have another look today?”",
+  "만물상을 둘러본다": "Browse his wares",
+  "어제는 보이지 않던 남자가 오늘은 다시 똑같은 모습으로 순찰실에 찾아왔다.\n\n\"오랜만... 이라고 말하기도 애매한가? 내가 인간관계가 넓지가 않아서 잘 모르겠네.\"": "The man who was absent yesterday visits the patrol room again, looking just as he always has.\n\n“Long time... Or is that not quite right? I wouldn't know. I don't get out much.”",
+  "어제는 왜 오지 않았냐고 묻는다.": "Ask why he did not come yesterday.",
+  "\"개인적인 사정이 있어서 말이지. 누가 좀 곤란하게 했달까. 내가 당신처럼 한가하지는 않는다고.\"\n\n그는 그렇게 말하며 순찰실 구석에 놓인 당신의 계약서를 흘깃 본다.\n\n\"나 없는 동안 주화를 꽤 모은 것 같으니 오늘은 특별히 더 귀한 것들로 가져와 봤어.\"": "“Personal matters. Someone was making things difficult for me, you might say. I'm not as idle as you.”\n\nAs he speaks, he glances at your contract in the corner of the patrol room.\n\n“You seem to have gathered plenty of coins while I was away. I've brought some particularly precious things today.”",
+  "\"나름 부지런하게 다닌다고 생각했는데, 나 말고 누가 먼저 다녀갔나 보네?\"": "“I thought I was making my rounds quite diligently. Looks like someone else got here before me?”",
+  "어떻게 알았냐고 묻는다": "Ask how he knew",
+  "\"희안한 물건을 파는 사람이 희안한 재주 하나 가지고 있나보다 생각해.\"\n\n물건을 하나씩 내려 놓던 그가 덧붙힌다.\n\n\"딱히 손님을 엿보는데 쓰진 않았으니까. 안심하고.\"": "“Just think of me as a man who sells strange things and has a strange little talent of his own.”\n\nSetting down his goods one by one, he adds:\n\n“I wasn't using it to spy on my customers, so don't worry.”",
+  "그 사람은 오늘도 같은 자리에서 진열대를 펼쳐놓고 있다. 이상하게도 오늘은 어딘가 지쳐 보이는 기색이다.\n\n\"오, 단골을 또 볼 수 있다니. 오늘이 행운의 날이 맞긴 하나봐. 그지?\"": "He has set up his display in the same place again. Strangely, he looks somewhat worn out today.\n\n“Oh, my regular's back. Must really be a lucky day, huh?”",
+  "\"말 그대로 운이 좋은 날이라는거지. 삿된 것들이 평소보다 덜 할거야. 알아보기도 쉬울거고.\"\n\n그 남자는 그렇게 말하고는 진열대에 있는 물건들을 가리킨다.\n\n\"그렇다고 행운에 모든걸 걸어서는 안돼. 그러니 물건 좀 보고 가지 않겠어, 고객님?\"": "“Just what it sounds like. A day of good luck. Fewer unclean things around than usual. Easier to spot, too.”\n\nHe gestures toward his wares.\n\n“Doesn't mean you should stake everything on luck. So why not have a look, dear customer?”",
+  "\"새벽에 누구랑 대판 싸워서, 라고 말하면 물건 안사줄거야?\"\n\n그 남자는 그렇게 말하고는 진열대에 있는 물건들을 가리킨다.\n\n\"대비는 미리미리 해야 하는거야. 당신도 운 나쁘게 죽지 말라고.\"": "“If I said I'd had a huge fight with someone at dawn, would you stop buying from me?”\n\nHe gestures toward his wares.\n\n“You have to prepare in advance. Wouldn't want you dying of bad luck, either.”",
+  "행운의 날에 대해 묻는다": "Ask about the lucky day",
+  "지쳐 보이는 이유에 대해 묻는다": "Ask why he looks tired",
+  "만물상을 살펴본다": "Browse his wares",
+  "\"하암... 용케 살아있었네?\"": "“Yaaawn... You've done well to stay alive, haven't you?”",
+  "\"무슨 일? 난 그날 여기 안왔어. 저번에도 말했잖아, 손님. 난 매번 한가하지 않다니까.\"": "“What happened? I wasn't here that day. I told you before, customer. I'm not always free.”",
+  "\"무슨 일? 난 그날 여기 안왔어. 뭔가 찜찜해서.\"": "“What happened? I didn't come that day. Something didn't feel right.”",
+  "그 말을 들은 남자의 입매가 굳게 다물렸다.\n\n\"응? 잘 못들었는데. 다시 말해주지 않겠어?\"": "His lips press tightly together.\n\n“Hm? Didn't quite catch that. Would you say it again?”",
+  "\"....진심이야?\"": "“...Are you serious?”",
+  "\"알았어... 쯧, 그 놈들 이런 식으로 내 장사를 방해하다니.\"\n\n그는 물건을 도로 집어넣고는 돌아간다. 아마 다시 돌아오지 않을 것 같다.": "“Fine... Tch. Those bastards, interfering with my business like this.”\n\nHe puts his goods away and leaves. You doubt he will return.",
+  "피곤한 기색으로 하품하던 남자가 노골적으로": "Yawning wearily, the man stares openly at",
+  "바라본다.": ".",
+  "8일차의 일을 물어본다": "Ask about day 8",
+  "9일차의 일을 물어본다": "Ask about day 9",
+  "오늘은 물건을 사지 않겠다고 말한다": "Say you will not buy anything today",
+  "다시 한번 오늘은 물건을 사지 않겠다고 말한다": "Say again that you will not buy anything today",
+  "물건을 사겠다고 말한다": "Say you will buy something",
+  "진심이라고 말한다": "Say you mean it",
+  "미안하다고 하고 물건을 산다": "Apologize and buy something",
+  "계속한다": "Continue",
+  "하루 몸을 뉘인 덕분인지, 정신이 한결 안정을 되찾은 것 같다. (정신력 +1)": "Perhaps a day spent lying down has helped. Your mind feels a little steadier. (Sanity +1)",
+  "\"오늘이 마지막이야.\"\n\n남자는 더 말하지 않고 물건들을 꺼내보인다.": "“Today's the last day.”\n\nWithout another word, he takes out his goods.",
+  "\"또 보네, 손님.\"\n\n그는 평소보다 많은 물건을 가지고 순찰실 앞에 도착해 있다.\n\n\"조만간 이 근처를 뜰 예정이야. 처분 할 수 있는 것들은 빨리 처리하려고.\"": "“Here again, customer.”\n\nHe has arrived outside the patrol room with more goods than usual.\n\n“I'll be leaving these parts soon. Getting rid of what I can, while I can.”",
+  "✉ 봉투를 열어본다": "✉ Open the envelope",
+  "순찰실 밖에서 누군가 걸어가는 발소리가 들린다. 규칙적인 걸음. 당신이 매일 밤 걷던 속도와 같다.": "Footsteps pass outside the patrol room. A steady pace. The same pace you walk every night.",
+  "발소리가 다시 지나간다. 이번에는 문 앞에서 한 번 멈췄다가 지나간다.": "The footsteps pass again. This time, they pause once at the door before moving on.",
+  "세 번째 발소리가 문 앞에서 멈춘다. 문 쪽으로 무언가를 가져다 대는 기척이 느껴진다.": "The third set of footsteps stops at the door. You sense something being held up against it.",
+  "대항 판정] 나": "opposed check] You",
+  "상대 [": "Opponent [",
+  "상대의 시도를 막아냈다.": "You thwarted the opponent's attempt.",
+  "발소리가 천천히 멀어진다.": "The footsteps slowly recede.",
+  "문 바깥에서 붉은 선이 그어진다. 순찰실 문에 레드라인이 그려졌다.": "A red line is being drawn outside the door. A red line now marks the patrol room door.",
+  "(정신력 -1)": "(Sanity -1)",
+  "걸음 걸이가 이상하다. 사람 다리가 저렇게 많던가?": "His walk is wrong. Do people have that many legs?",
+  "\"팝니다... 팔아요...\" 존댓말을?": "“For sale... Please, take a look...” Why so polite?",
+  "당신이 아는 그 사람이 아니다.": "That is not the person you know.",
+  "저 멀리서 그 남자가 걸어오고 있다.": "The man is walking toward you in the distance.",
+  "남은 판정 횟수:": "Checks remaining:",
+  "관찰력 판정": "Observation check",
+  "시야 · 형체, 빛, 변화": "Sight · shapes, light, changes",
+  "듣기 판정": "Hearing check",
+  "청각 · 소리, 기척": "Hearing · sounds, movement",
+  "직감 판정": "Intuition check",
+  "설명 못 할 느낌 · 오한, 기운": "An inexplicable feeling · chills, a presence",
+  "🔴 레드라인을 친다": "🔴 Draw a red line",
+  "어디에 레드라인을 칠까?": "Where will you draw the red line?",
+  "바닥에 친다": "On the ground",
+  "순찰실 문에 친다": "On the patrol room door",
+  "판정] 주사위": "check] Die",
+  "판정 성공": "Check succeeded",
+  "별다른 변화 없음": "No noticeable change",
+  "붉은 선이 손을 따라 바닥 위로 길게 그어졌다.\n\n만물상 주인의 형상을 한 무언가는 가까이 다가올수록 풀려버리는 실타레처럼 형체가 무너져 간다.\n\n그것은 붉은 선을 비웃듯이 너무나도 쉽게 그걸 넘어버린다.": "A long red line follows your hand across the ground.\n\nThe thing wearing the merchant's shape unravels as it approaches, like a tangled skein coming loose.\n\nAs though mocking the red line, it steps over with appalling ease.",
+  "식은땀을 흘리며 간신히 정신을 붙잡는다.": "In a cold sweat, you barely hold on to your senses.",
+  "(정신력 최대치가 하락한다)": "(Maximum Sanity decreases)",
+  "붉은 선이 손을 따라 문 위로 길게 그어졌다.\n\n순찰실 안으로 도망가 문을 잠근다.\n\n창문이 없어서 바깥을 확인할 수 없다.\n\n문고리가 덜커덕거리는 소리가 몇 번 일어나다 사라진다.": "A long red line follows your hand across the door.\n\nYou flee into the patrol room and lock it.\n\nThere is no window, so you cannot see outside.\n\nThe doorknob rattles a few times, then falls silent.",
+  "세 번째 집을 지나자 골목 끝, 북동쪽에 낯선 건물이 보인다. 문 옆에 「순찰실」이라고 적힌 작은 간판이 걸려 있다.\n\n계약서에는 분명 북동쪽 순찰실은 없다고 적혀 있었다.\n\n창문 안에서 불이 켜졌다 꺼지기를 반복한다. 누군가 안에 있는 건지, 전등이 고장 난 건지 알 수 없다.": "Past the third house, an unfamiliar building appears at the northeast end of the alley. A small sign beside its door reads “Patrol Room.”\n\nThe contract clearly stated that there was no northeast patrol room.\n\nThe light inside keeps flicking on and off. You cannot tell whether someone is in there, or the light is faulty.",
+  "실루엣은 보이지 않는다. 보이지 않는다. 않는다. 않는 아 ㄶ ... 봤어?": "There is no silhouette. No silhouette. No. Not n no ... did you see?",
+  "틱. 틱. 틱. 불을 껏다 키는 소리가 들린다. 틱.틱.틱. 틱틱틱틱틱틱틱틱": "Click. Click. Click. You hear the light switching off and on. Click.click.click. clickclickclickclickclickclickclickclick",
+  "알려고 하지마 뒤로돌아 어서 지나가지나가나가!!!!!!!!!!!": "DON'T TRY TO KNOW TURN AROUND HURRY KEEPWALKINGWALKINGWALK!!!!!!!!!!!",
+  "⟲ 처음부터 다시 시작하기": "⟲ Start over from the beginning",
+  "정말 처음부터 다시 시작할까요?": "Really start over from the beginning?",
+  "한 번 더 누르면 이름 입력부터 다시 시작합니다": "Press once more to return to name entry",
+  "◆ 원하는 회차로 이동하기": "◆ Return to a day of your choice",
+  "일차부터 다시 진행": "Restart from day",
+  "그 회차 시작 시점의 스탯·장비·주화로 되돌아갑니다": "Restores your stats, equipment, and coins from the start of that day",
+  "정말": "Really",
+  "일차로 이동할까요?": "return to this day?",
+  "한 번 더 누르면": "Press once more to restart",
+  "일차 순찰이 새로 시작됩니다": "this day's patrol",
+  "⏪ 이전 회차로 돌아가기": "⏪ Return to the previous round",
+  "일차 순찰을 시작 상태에서 처음부터 다시 진행합니다": "Restart this day's patrol from its starting state",
+  "일차로 돌아갈까요?": "return to this day?",
+  "작은 사람이 당신을 대신해 피해를 받았다.": "The little figure took the damage in your place.",
+  "번 더 도움을 받을 수 있을 것 같다.": "more uses of its help remain.",
+  "더 이상 도움을 받을 수 없을 것 같다.": "It seems it can help you no longer.",
+  "📄 계약서(기본 수칙) 다시 보기": "📄 Review contract (basic rules)",
+  "순찰 근무 계약서": "Patrol Employment Contract",
+  "📄 계약서 닫기": "📄 Close contract",
+  "피해 감면 ·": "Damage absorption ·",
+  "회 남음": " uses left",
+  "정신력 최대치 +": "Maximum Sanity +",
+  "정신력 +1 · 1회용": "Sanity +1 · single use",
+  "주화 2배 (15%)": "Double coins (15%)",
+  "판정 횟수 +1": "Checks +1",
+  "장비 슬롯 (": "Equipment slots (",
+  ") · 장비를 누르면 버릴 수 있습니다": ") · Select equipment to discard it",
+  "누르면 버리기": "Select to discard",
+  "정말 버릴까요?": "Really discard this?",
+  "한 번 더 누르면 버립니다": "Press once more to discard",
+  "비어 있음": "Empty",
+  "특수 아이템 ·": "Special item ·",
+  "거울 조각": "Mirror Shard",
+  "— 정신력 최대치 +1 (슬롯 미차지)": "— Maximum Sanity +1 (uses no slot)",
+  "남동쪽 골목": "Southeast alley",
+  "김솔의 만물상": "Kim Sol's General Store",
+  "알 수 없는 만물상": "The Stranger's General Store",
+  "가로등 아래": "Beneath the streetlight",
+  "북동쪽 순찰실": "Northeast patrol room",
+  "집 뒤편": "Behind the house",
+  "남동쪽 순찰실": "Southeast patrol room",
+  "· 야간 기록": "· Night log",
+  "이름": "Name",
+  "관찰": "Obs.",
+  "· 듣기": "· Hearing",
+  "· 정신": "· Sanity",
+  "· 직감": "· Intuition",
+  "주화": "coins",
+  "정신력 1회 회복": "Restores 1 Sanity",
+  "레드라인의 심야 골목": "REDLINE's late-night alley",
+  "레드라인": "REDLINE",
+  "시급 5만원, 위험수당 포함 40만원. 심야 순찰 / 이상현상 보고직": "₩50,000 an hour. ₩400,000 including hazard pay. Night patrol / anomaly reporting",
+  "돈이 급했다. 그래서 이 공고를 봤을 때 의심보다 계산이 먼저 섰다.\n23:00부터 07:00까지, 단지를 순찰하며 이상한 집 앞에 붉은 선을 긋는다. 그게 전부라고 했다.\n문자로 받은 주소를 따라가니, 반쯤 불 꺼진 주택단지가 나타났다. 초입에 한 남자가 서 있었다 — 그는 자신을 전임 순찰자라고 소개하며 인수인계를 하러 왔다고 밝혔다. 그는 나에게 어딘가 씁쓸한 미소를 지으며 계약서를 건내었다.": "I needed money. When I saw the listing, I did the sums before I thought to be suspicious.\nFrom 23:00 to 07:00, patrol the complex and draw red lines in front of strange houses. That was all, they said.\nI followed the address in the text to a residential complex with half its lights out. A man stood at the entrance. He introduced himself as the previous patrol worker, here to hand things over. With a faintly bitter smile, he held out a contract.",
+  "계약서에 서명할 이름을 적어주십시오.": "Enter the name you will sign on the contract.",
+  "서명한다": "Sign",
+  "📂 저장된 게임 이어하기": "📂 Continue saved game",
+  "저장 데이터 삭제": "Delete save data",
+  "시각적 이상을 포착한다": "Detect visual anomalies",
+  "소음을 통해 이상을 포착한다": "Detect anomalies through sound",
+  "0이 되면 그 자리에서 기절, 게임 오버": "At 0, you collapse on the spot. Game over.",
+  "근거 없이 현실을 가늠한다": "Sense reality without evidence",
+  ", 스탯을 배분하십시오": ", allocate your stats",
+  "총 20포인트. 2포인트당 1레벨이 됩니다. 남은 포인트:": "20 points total. Every 2 points grant 1 level. Points remaining:",
+  "배분 완료": "Confirm allocation",
+  "이제는 제법 익숙해진 출근길. 이상현상이 아직 나타나지 않은 오후 11시.\n\n순찰실 앞에 누군가가 서 있다.\n\n희끗한 머리를 가진 중년 남성. 지금 입고 있는 순찰복의 옛 주인이다.": "The route to work is familiar now. It is 23:00, before the anomalies begin.\n\nSomeone is standing outside the patrol room.\n\nA middle-aged man with graying hair. The former owner of the patrol uniform you are wearing.",
+  "전임자에게 인사한다.": "Greet your predecessor.",
+  "인사를 들은 그가 가볍게 고개를 끄덕인다.\n\n\"그래, 몸 건강히 잘 지내는 것 같아서 다행이구만...\"\n\n그는 뭔가 불편한지 주위를 두리번거리다 작게 속삭인다.\n\n\"자네, 여기서 일한 지 이제 6일째 되어가고 있지? 내가 자네가 걱정 되어서 하는 말이니 잘 들어주게.\"": "He gives a slight nod in greeting.\n\n“Well, glad to see you're keeping healthy...”\n\nHe looks around uneasily, then lowers his voice.\n\n“This is your sixth day working here, isn't it? I'm telling you this because I'm worried about you. Listen carefully.”",
+  "듣는다.": "Listen.",
+  "듣지 않는다.": "Do not listen.",
+  "그의 표정이 잠시 안도하듯 환해진다.\n\n\"그래, 잘 생각했어.\"\n\n그가 조금 더 가까이 다가와 말한다.\n\n\"자네도 이쯤되면 알겠지. 여기서 하는 일이라는 게 그냥 빨간 줄 몇 개 긋는 게 아니란 걸.\"": "His face brightens with momentary relief.\n\n“Good. That's wise.”\n\nHe moves a little closer.\n\n“You must have realized by now. This job isn't just drawing a few red lines.”",
+  "계속 듣는다.": "Keep listening.",
+  "\"순찰실 캐비닛 안쪽에 사직서가 있어. 원래 열흘 이상 근무한 사람한테만 그들이 알려주는 거지만...\"\n\n그는 눈치를 보듯 다시 한 번 주위를 둘러본다.\n\n\"거기에 자네 이름을 적어. 그리고 우체통에 부치면 다음 날에 퇴사가 되어 있을 거야.\"": "“There's a resignation letter in the patrol room cabinet. Normally, they only tell people who've worked here at least ten days...”\n\nHe glances around once more, as if afraid of being noticed.\n\n“Write your name on it. Put it in the mailbox, and you'll have left the job by the next day.”",
+  "알려줘서 고맙다고 말한다.": "Thank him for telling you.",
+  "감사인사를 들은 그 자는 더 이상 말을 꺼내지 않고 빠르게 자리를 뜬다.": "After your thanks, he says nothing more and hurries away.",
+  "정비를 시작한다.": "Begin preparations.",
+  "거절당한 그는 조금 몸을 움찔거리듯 떤다.\n\n\"그, 내가 위험을 무릅쓰고 알려주러 온 건데... 거 참, 버릇 없기는!\"\n\n그는 버럭 화를 내고서는 자리를 뜬다.": "He flinches slightly at your refusal.\n\n“I— I took a risk coming here to tell you... How ungrateful!”\n\nHe snaps at you, then leaves.",
+  "정비를 마치고 나서려는데, 순찰실 구석의 낡은 캐비닛이 눈에 들어온다.": "You finish preparing and are about to leave when you notice an old cabinet in the corner of the patrol room.",
+  "캐비닛을 열어본다": "Open the cabinet",
+  "열지 않는다": "Leave it closed",
+  "오래되어 변색된 종이 봉투가 나온다. 입구는 단단히 밀봉되어 있고, 겉면에는 「사직서」라고 적혀 있다.": "You find a discolored old paper envelope. It is tightly sealed, with “Resignation Letter” written on the outside.",
+  "사용한다": "Use it",
+  "사용하지 않는다": "Do not use it",
+  "봉투를 뜯으니 안쪽에 빈칸이 하나 있다. 이름을 적으라는 듯하다.": "Inside the torn-open envelope is a single blank space. It seems you are meant to write a name.",
+  "적은 이름으로 봉투를 닫는다": "Seal the envelope with the name you wrote",
+  "봉투를 단단히 봉하고, 정비를 마친 뒤 우체통에 사직서를 넣는다.\n서늘한 밤바람이 손끝을 스친다.": "You seal the envelope tightly and put the resignation letter in the mailbox after finishing your preparations.\nThe cool night air brushes your fingertips.",
+  "만물상으로 향한다": "Go to the general store",
+  "품에서 봉투를 꺼내 열어본다.\n\n안에는 얼룩 하나 없는 깨끗한 사직서가 들어 있다.": "You take out the envelope and open it.\n\nInside is a clean resignation letter, without a single stain.",
+  "깨끗한 사직서에는 빈칸이 하나 있다. 이름을 적으라는 듯하다.": "The clean resignation letter has a single blank space. It seems you are meant to write a name.",
+  "정비를 이어간다": "Continue preparations",
+  "휴대전화에 도착한 근무 종료 통보": "A message on your phone announcing the end of your employment",
+  "트루엔딩1. [13일의 근무일]": "True Ending 1. [Thirteen Days of Work]",
+  "13일까지의 일을 마쳤다.\n\n'귀하의 성실한 근무 태도를 본사는 높게 평가하였으나 내부 사정으로 인해 해당 직무를 더 이상 유지하지 못하게 되었음을 알려드립니다.'\n\n어째서인지 회사에서는 더 이상의 추가 근무는 필요하지 않다는 문자와 함께 계좌로 13일치 임금을 입금해 주었다.\n\n다시 그 동네를 찾아가 보려고도 했으나 이상하게도 길을 찾을 수가 없었다.": "You have finished all thirteen days of work.\n\n'We value your diligent service. However, due to internal circumstances, we regret to inform you that we can no longer maintain this position.'\n\nFor some reason, the company sent a message saying no further work would be required, and deposited thirteen days' wages into your account.\n\nYou tried to visit the neighborhood again, but, strangely, you could no longer find the way.",
+  "골목의 출구를 막은 그림자": "A shadow blocking the way out of the alley",
+  "엔딩5. 내가 무시하라고 그랬잖아.": "Ending 5. I Told You to Ignore It.",
+  "13일까지의 일을 마쳤다.\n\n일을 끝내고 퇴근을 하려고 했다.\n\n그러나 이상하게도 길을 걷고 또 걸어도 동네의 출구로 나아가지 않았다.": "You have finished all thirteen days of work.\n\nYou tried to leave after your shift.\n\nYet no matter how far you walked, you never seemed to reach the way out of the neighborhood.",
+  "\"갇혀버렸네. 뭐 안지킨 수칙이라도 있어?\"\n\n떠나려는지 짐을 싼 만물상의 그 남자가 멀찍이서 바라본다.\n\n그는 자루를 바닥에 내려 두고는 입구를 연다.\n\n\"여기 계속 있을 바에야... 이쪽에 들어오는건 어때?\"": "“Trapped, are you? Break any rules?”\n\nThe merchant watches from a distance, his belongings packed as if he is about to leave.\n\nHe sets his sack down and opens it.\n\n“Rather than stay here forever... why not come in here?”",
+  "골목 너머로 밝아오는 새벽": "Dawn breaking beyond the alley",
+  "트루엔딩2. [일상으로]": "True Ending 2. [Back to Everyday Life]",
+  "사직서가 수료 된 다음날.\n\n회사에서는 근무 시간을 책정해 계좌로 돈을 입금해주었다.\n\n그 모든": "The day after your resignation was processed.\n\nThe company calculated your hours and deposited the money into your account.\n\nAll",
+  "일 간의 일들이 전부 꿈만 같이 느껴진다.\n\n당분간은 문 앞의 붉은 선들을 보지 않아도 되겠지.": " days of it feel like a dream.\n\nFor a while, at least, you won't have to see those red lines outside the doors.",
+  "\"고생 많을 거야. 근데 별거 없어. 보이면 긋고, 안 보이면 그냥 지나가면 돼.\"\n\n그는 낡은 순찰복과 붉은 선을 그을 도구를 건네고는, 뒤도 안 돌아보고 골목 저편으로 사라졌다.\n당신은 그의 뒷모습이 완전히 사라질 때까지 그 자리에 서 있었다.": "“It's going to be hard. But there's nothing to it. If you see something, draw a line. If you don't, just walk on.”\n\nHe hands you a worn patrol uniform and a tool for drawing red lines, then disappears down the alley without looking back.\nYou stand there until his retreating figure is completely gone.",
+  ", 이제 당신 차례다.": ", it is your turn now.",
+  "장비보관소로 간다": "Go to the equipment room",
+  "장비보관소 — 서랍 2개, 도구는 하나": "Equipment Room — Two Drawers, One Tool",
+  "둘 중 하나만 챙길 수 있습니다.": "You may take only one of the two.",
+  "장비 슬롯이 가득 차 있어, 새 장비를 고르면": "Your equipment slots are full. Choosing a new item will put down",
+  "을(를) 내려놓게 됩니다.": ".",
+  "아무것도 가져가지 않는다 (현재 장비 유지)": "Take nothing (keep current equipment)",
+  "1일차 · 자정": "Day 1 · Midnight",
+  "시계가 자정을 넘긴다. 정비 시간이 끝났다.\n남동쪽 순찰실 문틈으로 당신은 골목을 바라본다. 오늘 밤, 이 길을 따라 북서쪽까지 걸어야 한다.\n손에 쥔 붉은 선 도구가 유난히 무겁게 느껴진다.": "The clock passes midnight. Preparation time is over.\nThrough the gap in the southeast patrol room door, you look out into the alley. Tonight, you must follow this road all the way northwest.\nThe red-line tool feels unusually heavy in your hand.",
+  "순찰을 시작한다": "Begin patrol",
+  "일차 순찰 · 현재 시각": "patrol · Current time",
+  "번째 집": "house",
+  "이 집에서 남은 판정 횟수:": "Checks remaining at this house:",
+  "집의 뒷마당을 살펴본다": "Examine the backyard",
+  "시야 · 집 뒤편으로 이어지는 길": "Sight · the path behind the house",
+  "그냥 지나간다": "Walk past",
+  "사탕을 먹는다 (정신력 +1, 1회용)": "Eat candy (Sanity +1, single use)",
+  "일차 종료": "ends",
+  "07:00. 북서쪽 순찰실 문을 닫는다. 창밖이 서서히 밝아온다.\n이번 순찰에서 붉은 주화": "07:00. You close the northwest patrol room door. Outside, the sky is slowly growing light.\nOn this patrol, you earned",
+  "개를 얻었다. 정신력은": " red coins. Sanity remaining: ",
+  "로 남았다.": ".",
+  "손이 아직도 떨린다.": "Your hands are still shaking.",
+  "일차로": "Go to day",
+  "퇴사의 유혹을 뿌리치고 출근하는 일곱째 날이다.": "It is your seventh day. You have resisted the temptation to resign and come to work.",
+  "「오늘의 추가 수칙」": "“Today's Additional Rules”",
+  "・ 오늘 예상 이상현상 발생 구간:": "・ Expected anomalies tonight:",
+  "건.": "incidents.",
+  "일차 · 추가 수칙서": "· Additional Rules",
+  "오늘은 그 남자가 보이지 않는다.": "The man is nowhere to be seen today.",
+  "정비를 마친다": "Finish preparations",
+  "그 사람은 오늘도 같은 자리에서 진열대를 펼쳐놓고 있다.": "He has set up his display in the same place again today.",
+  "골목 어귀에 낯선 그림자가 서 있다. 검은 머리, 노란 눈, 훤칠한 장신.\n검은 한복 위에 겉은 검고 속은 붉은 도포를 걸친 남성이였다. 서른 중반쯤으로 보이지만 확신할 수 없다.\n\n\"오, 그래서, 그 놈들이 새 순찰자를 기어코 뽑았군?\"\n\n\"보아하니 붉은 주화를 좀 얻은 듯한데, 물건 좀 사지 않을래?\"\n\n\"음, 그 놈들이 주는 장비가 이미 있다고? 손은 두 개니 장비도 두 개 쓰면 되는 거 아닌가.\"\n\n\"자자, 그럼 골라봐. 이 중 하나만 고르면 후딱 팔아주지.\"": "An unfamiliar figure stands at the mouth of the alley. Black hair, yellow eyes, strikingly tall.\nHe wears a black hanbok beneath a long robe, black outside and red within. He looks to be in his mid-thirties, but you cannot be sure.\n\n“Oh, so those bastards finally hired a new patrol worker?”\n\n“Looks like you've picked up some red coins. Want to buy something?”\n\n“Hm? You've already got the equipment they gave you? You've got two hands. Why not use two pieces of equipment?”\n\n“Come on, take your pick. Just choose one and we'll make it quick.”",
+  "장비 슬롯이 2개로 늘어났다.": "Your equipment slots have increased to 2.",
+  "김솔의": "Kim Sol's",
+  "만물상": "General Store",
+  "그가 의미심장한 미소를 지었다.": "He gives a knowing smile.",
+  "보유 주화:": "Coins held:",
+  "· 오늘은 하나만 살 수 있다.": "· You may buy only one item today.",
+  "장비 슬롯이 가득 차 있어, 장비를 사면": "Your equipment slots are full. Buying equipment will put down",
+  "을(를) 내려놓게 된다. (뽑기는 슬롯을 쓰지 않는다)": ". (Fortune slips use no slot.)",
+  "사지 않고 나선다": "Leave without buying",
+  "뽑기를 펼치니 이런 문구가 적혀 있다 — \"오늘 밤,": "You unfold the fortune slip. It reads: “Tonight, take particular care at house",
+  "번째로 마주칠 집을 각별히 조심하라.\"": ".”",
+  "일차 · 자정": "· Midnight",
+  "그 사람은 남은 물건을 챙겨 골목 저편으로 사라졌다. 그가 서 있던 자리엔 발자국도 남지 않았다.": "He gathers his remaining goods and disappears down the alley. Not even a footprint remains where he stood.",
+  "첫째": "first",
+  "이틀째": "second",
+  "사흘째": "third",
+  "나흘째": "fourth",
+  "닷새째": "fifth",
+  "엿새째": "sixth",
+  "이레째": "seventh",
+  "여드레째": "eighth",
+  "아흐레째": "ninth",
+  "열흘째": "tenth",
+  "열하루째": "eleventh",
+  "열이틀째": "twelfth",
+  "열사흘째": "thirteenth",
+  "일차 순찰 종료": "patrol complete",
+  "순찰 종료 후의 새벽": "Dawn after patrol",
+  "07:00. 붉은 선을 다 그은 골목 뒤로 해가 뜬다.": "07:00. The sun rises behind the alley and its red lines. The",
+  "밤이 끝났다.\n당신은 살아남았다. 정신력": "night is over.\nYou survived. Sanity",
+  ", 보유 주화": ", coins held",
+  "일차 이야기는 아직 쓰이지 않았다 — 다음 편에 계속.": "story has not been written yet — to be continued.",
+  "마지막 퇴근을 마치고 집에 돌아왔다. 햇살이 내리쬐는 거리는 오랜만이다.\n\n당신은 푹신한 침대에 몸을 눕힌다. 어째선지 평소보다 조금 더 피곤한 날이다.\n\n그렇게 하루를 꼬박 자고 일어나니 어느새 해가 저물어 있었다.": "You return home after your final shift. It has been a long time since you saw the streets in sunlight.\n\nYou lie down on your soft bed. For some reason, you feel a little more tired than usual.\n\nYou sleep for a full day. When you wake, the sun has already set.",
+  "출출함을 느끼고 밖으로 나가본다": "Feeling hungry, go outside",
+  "문을 열자 이제는 익숙한 밤의 거리가 보인다.\n\n무심코 고개를 돌려 문을 바라보자\n\n그곳에는 붉은 선이 그어져 있었다.": "You open the door onto the night streets you know so well.\n\nWithout thinking, you turn to look at your door.\n\nThere is a red line drawn across it.",
+  "현관에 그어진 붉은 선": "A red line drawn across your entrance",
+  "엔딩 2. 레드라인": "Ending 2. REDLINE",
+  "당신을 대체할 사람은 많았다.": "There were plenty of people who could replace you.",
+  "9일차의 날이 되었다. 오늘 출근을 해야할까?": "Day 9 has arrived. Should you go to work today?",
+  "출근한다": "Go to work",
+  "하지 않는다": "Do not go",
+  "순찰실은 여느 때 처럼 똑같은 모습이다.\n\n늘 보이던 그 남자는 보이지 않는다.\n\n우편물에는 늘상 보이던 추가 수칙서가 있다.": "The patrol room looks just as it always does.\n\nThe man you usually see is absent.\n\nAmong the mail is the usual sheet of additional rules.",
+  "추가 수칙서 열람": "Read the additional rules",
+  "오늘은 밖으로 나가지 마십시오": "Do not go outside today",
+  "자정. 붉은 선 도구를 쥔다.": "Midnight. You take up the red-line tool.",
+  "순찰 나간다": "Go out on patrol",
+  "나가지 않는다": "Stay inside",
+  "9일차 · 순찰실 안 ·": "Day 9 · Inside the patrol room ·",
+  "/3번째 순찰": "/3 patrol rounds",
+  "문 밖의 상대와 대항 판정을 한다. 이기지 못하면 순찰실 문에 레드라인이 그어진다. 판정할 감각을 고르십시오.": "Make an opposed check against whoever is outside. If you do not win, a red line will be drawn on the patrol room door. Choose a sense for the check.",
+  "다음 순찰을 기다린다": "Wait for the next patrol",
+  "벽시계는 어느새 7시를 가리키고 있었다.": "Before you knew it, the wall clock read 7.",
+  "붉은 주화 +5": "Red coins +5",
+  "10일차로": "Go to day 10",
+  "순찰실 문 앞에 무언가 떨어져 있다.\n\n깨진 거울 조각 하나.": "Something lies outside the patrol room door.\n\nA shard of broken mirror.",
+  "획득 — 무언가를 비춘다. 진짜보다 더 진짜 같다.": " obtained — it reflects something. More real than the real thing.",
+  "정신력 최대치 +1 · 슬롯을 차지하지 않는다": "Maximum Sanity +1 · Uses no equipment slot",
+  "수칙서를 확인한다": "Read the rules",
+  "그림자에 잠식된 골목": "An alley consumed by shadows",
+  "엔딩3": "Ending 3",
+  "가끔은 남들의 모습을 따라하고 싶은 사람이 있죠.": "Some people want to imitate others, sometimes.",
+  "오늘은 당신이 순찰하는 날이 아닙니다.": "Today is not your day to patrol.",
+  "일차": "Day",
+  "모든 순찰을 마친 뒤 순찰실로 되돌아가는 길이다.\n\n어둠 속에서 누군가가 순찰실 앞에 서 있다. 그 사람은 순찰실 앞에 무언가를 두고 간다.": "You are heading back to the patrol room after completing your rounds.\n\nSomeone stands outside it in the dark. They leave something in front of the patrol room.",
+  "자세히 살펴본다": "Look more closely",
+  "바닥에는 쪽지가 떨어져 있다. 찢겨진 종이 위로 급하게 휘갈겨 적은 손글씨가 보인다.": "A note lies on the ground. Handwriting scrawled in haste covers the torn paper.",
+  "9일째가 되는 날,": "On the ninth day,",
+  "순찰실을 나오지 마시오": "do not leave the patrol room",
+  "쪽지를 챙긴다": "Take the note",
+  "집의 뒤편에는 이름 모를 남자가 서 있다. 그는 친절한 미소를 지은채로 손에 봉투를 쥐고 있었다.": "An unknown man stands behind the house. He smiles kindly, an envelope in his hand.",
+  "\"안녕하시오, 이름 모를 순찰자. 나는 그대를 돕기 위해 왔소.\"": "“Greetings, nameless patrol worker. I have come to help you.”",
+  "누구냐고 묻는다": "Ask who he is",
+  "\"그것을 설명하기엔 시간이 없소. 그대도 느끼고 있겠지. 날이 갈 수록 힘들어지고 있다는걸.\"": "“There is no time to explain. You must feel it too. It grows harder with every passing day.”",
+  "그 자는 손에 들린 봉투를 건낸다.": "He offers you the envelope in his hand.",
+  "\"캐비닛 안에 든 것은 오래 전에 오염되어 있던 것이오. 그러니 이걸 사용하는게 좋을 것이오.\"": "“What lies in the cabinet was tainted long ago. You would do well to use this instead.”",
+  "봉투를 받아든다.": "Accept the envelope.",
+  "봉투를 받아들지 않는다": "Do not accept the envelope",
+  "친절한 남자는 환하게 웃으며 모퉁이로 사라진다.": "The kindly man smiles brightly and disappears around the corner.",
+  "계속 순찰한다": "Continue patrol",
+  "\"...그게 그대의 선택이라면.\"": "“...If that is your choice.”",
+  "남자는 안타까운 표정을 짓더니 그만 사라진다.": "He looks sorrowful, then vanishes.",
+  ":00 · 집 뒤편": ":00 · Behind the house",
+  "길가에 검은 사람이 서 있다. 기다란 검은 사람.\n\n그는 기다란 팔을 들어 손을 흔들고 있다. 길고 검은 팔.": "A black figure stands by the road. A long, black figure.\n\nHe raises a long arm and waves. A long, black arm.",
+  "다가간다": "Approach",
+  "다가가지 않는다": "Do not approach",
+  "검은 사람은 손에 쥔 물건을 건내준다.\n\n잘 접힌 쪽지가 단정하게 손에 쥐어졌다.": "The black figure hands you what he is holding.\n\nA neatly folded note is placed carefully in your hand.",
+  "쪽지를 살펴본 사이에 검은 사람은 어디론가 가고 없었다.": "By the time you finish looking at the note, the black figure is gone.",
+  "어제 보았던 북동쪽 순찰실이 오늘은 보이지 않는다.": "The northeast patrol room you saw yesterday is nowhere to be seen today.",
+  ":00 · 북서쪽 순찰실 앞": ":00 · Outside the northwest patrol room",
+  "두 개의 순찰실 문": "Two patrol room doors",
+  "오른쪽 문을 열기": "Open the right door",
+  "왼쪽 문을 열기": "Open the left door",
+  "순찰실로 들어간다": "Enter the patrol room",
+  ":00 · 북동쪽": ":00 · Northeast",
+  "존재하지 않는 북동쪽 순찰실": "The northeast patrol room that does not exist",
+  "붉은 선 도구를 문 앞에 대어 보지만, 어째서인지 선이 그어지지 않는다. 이곳에는 레드라인을 칠 수 없다.": "You hold the red-line tool up to the door, but for some reason it leaves no line. You cannot draw a red line here.",
+  "시야가 흐려진다. 다리에 힘이 풀린다.": "Your vision blurs. Your legs give way.",
+  "은 그 자리에 쓰러졌다. 아무도 그를 발견하지 못했다.": " collapses on the spot. No one ever finds them.",
+  "비 내리는 골목에 쓰러진 순찰자": "A patrol worker collapsed in a rain-soaked alley",
+  "엔딩1. 광인": "Ending 1. The Mad One",
+  "제정신인 사람들은 모르는게 너무 많다.": "There is so much the sane do not know.",
+  "집 옆으로 뒷마당에 이어지는 좁은 길이 눈에 들어온다.": "A narrow path leading to the backyard catches your eye beside the house.",
+  "구슬이 은은하게 빛난다 — 주화가 두 배로 늘었다.": "The bead glows faintly — the coins have doubled.",
+  "정확했다. 붉은 선이 문 앞에 그어진다. 주화를": "You were right. A red line marks the doorway. You received",
+  "두 개": "two coins",
+  "하나": "one coin",
+  "얻었다.": ".",
+  "판단이 틀렸다.": "You were wrong.",
+  "(정신력 피해 없음)": "(no Sanity damage)",
+  "판단이 틀렸다. 등 뒤로 서늘한 기운이 스친다. (정신력 -1)": "You were wrong. A chill brushes your back. (Sanity -1)",
+  "충격으로 정신이 흔들린다. (정신력 -1)": "The shock rattles your mind. (Sanity -1)",
+  "오늘도 열심히 일을 끝냈다. 마지막 순찰을 돈 뒤 북서쪽 순찰실로 돌아가는 길이였다.\n\n당신의 눈이 잘못된 것인지, 순찰실 문이 두개로 보인다.": "Another hard night's work is done. After the final round, you are heading back to the northwest patrol room.\n\nPerhaps your eyes are deceiving you. There seem to be two patrol room doors.",
+  "오른쪽의 문에는 희미하게 레드라인이 그려져 있다.": "A faint red line marks the door on the right.",
+  "오른쪽 문을 누가 긁고 있는 것 같다.": "It sounds as though someone is scratching the right-hand door.",
+  "\"난 오른쪽에 있어\"": "“I'm on the right.”",
+  "문고리를 잡고 돌리자 당신에게 익숙한 순찰실의 풍경이 보인다. 여기서는 안전하다.": "You turn the handle. The familiar patrol room lies before you. You are safe here.",
+  "문고리를 잡고 돌리자 무언가 당신을 덮친다. 그게 사람이였는지 어둠이였는지는 알 수 없다.": "You turn the handle, and something falls upon you. Whether it is a person or the darkness, you cannot tell.",
+  "다시 정신을 차려보니 당신은 순찰실 바닥에 누워 있었다. 많이 피곤했던 것일까?": "When you come to, you are lying on the patrol room floor. Were you that tired?",
+  "생각이 더 이뤄지기 전에 당신의 정신이 끊어진다.": "Before you can think any further, your consciousness cuts out.",
+  "[게임 오버]": "[GAME OVER]",
+  "주사위": "Die",
+  "추가 수칙서": "Additional Rules",
+  "자정": "Midnight",
+  "순찰실 안": "Inside the patrol room",
+  " 장면": " scene",
+  "의 픽셀 일러스트": " pixel illustration",
+  "을 바라본다.": ".",
+  "를 바라본다.": ".",
+  "정확했다. 붉은 선이 문 앞에 그어진다. 주화를 하나 얻었다.": "You were right. A red line marks the doorway. You received one coin.",
+  "정확했다. 붉은 선이 문 앞에 그어진다. 주화를 두 개 얻었다.": "You were right. A red line marks the doorway. You received two coins."
+};
+const normalizeTranslationKey=text=>text.replace(/\s+/g,' ');
+const englishByKey=new Map(Object.entries(ENGLISH_TEXT).map(([ko,en])=>[normalizeTranslationKey(ko),en]));
+const escapePattern=text=>text.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const translationPattern=new RegExp([...englishByKey.keys()].sort((a,b)=>b.length-a.length).map(key=>escapePattern(key).replace(/ /g,'\\s+')).join('|'),'g');
+function translateText(source){
+  let text=source;
+  const exact=englishByKey.get(normalizeTranslationKey(text.trim()));
+  if(exact!==undefined) return text.match(/^\s*/)[0]+exact+text.match(/\s*$/)[0];
+  // Reorder numeric labels without changing their values or their source in S.
+  text=text
+    .replace(/피해 감면 · (\d+)회 남음/g,(_,n)=>`Damage absorption · ${n} ${n==='1'?'use':'uses'} left`)
+    .replace(/뽑기를 펼치니 이런 문구가 적혀 있다 — "오늘 밤, (\d+)번째로 마주칠 집을 각별히 조심하라\."/g,'You unfold the fortune slip. It reads: “Tonight, take particular care at house $1.”')
+    .replace(/정말 (\d+)일차로 (?:이동|돌아갈)까요\?/g,'Really return to day $1?')
+    .replace(/정말 (\d+)일차로 이동할까요\?/g,'Really return to day $1?')
+    .replace(/한 번 더 누르면 (\d+)일차 순찰이 새로 시작됩니다/g,"Press once more to restart day $1's patrol")
+    .replace(/(\d+)일차 순찰을 시작 상태에서 처음부터 다시 진행합니다/g,"Restart day $1's patrol from its starting state")
+    .replace(/(\d+)일차부터 다시 진행/g,'Restart from day $1')
+    .replace(/(\d+)일차 이야기는 아직 쓰이지 않았다 — 다음 편에 계속\./g,"Day $1's story has not been written yet — to be continued.")
+    .replace(/(\d+)주화/g,'$1 coins')
+    .replace(/(\d+)일차로/g,'Go to day $1')
+    .replace(/(\d+)일차/g,'Day $1')
+    .replace(/(\d+)\/(\d+)번째 집/g,'House $1/$2')
+    .replace(/(\d+)\/3번째 순찰/g,'Patrol $1/3')
+    .replace(/(\d+)번 더 도움을 받을 수 있을 것 같다\./g,(_,n)=>`It seems it can help you ${n==='1'?'once more':n+' more times'}.`)
+    .replace(/(\d+)번째로 마주칠 집을 각별히 조심하라\./g,'$1.')
+    .replace(/Day (\d+) 순찰 · 현재 시각/g,'Day $1 patrol · Time')
+    .replace(/Day (\d+) 순찰 종료/g,'Day $1 patrol complete')
+    .replace(/Day (\d+) 종료/g,'Day $1 complete');
+  return text.replace(translationPattern,match=>englishByKey.get(normalizeTranslationKey(match)));
+}
+// Names are untrusted user text, never translation keys or HTML.
+function playerNameMarkup(name){return `<span data-player-name>${escapeHtml(name)}</span>`;}
+const localizedText=new WeakMap();
+const localizedAttributes=new WeakMap();
+function localizeScreen(){
+  document.documentElement.lang=language;
+  document.title=language==='en'?'REDLINE':'레드라인';
+  const walker=document.createTreeWalker(app,NodeFilter.SHOW_TEXT);
+  let node;
+  while((node=walker.nextNode())){
+    if(node.parentElement.closest('[data-player-name],.language-controls,script,style')) continue;
+    const previous=localizedText.get(node);
+    const source=previous && node.data===previous.output ? previous.source : node.data;
+    const output=language==='en'?translateText(source):source;
+    localizedText.set(node,{source,output});
+    if(node.data!==output) node.data=output;
+  }
+  app.querySelectorAll('[aria-label],[alt],[title],[placeholder]').forEach(element=>{
+    if(element.closest('.language-controls')) return;
+    let records=localizedAttributes.get(element);
+    if(!records){records=new Map();localizedAttributes.set(element,records);}
+    for(const attribute of ['aria-label','alt','title','placeholder']){
+      if(!element.hasAttribute(attribute)) continue;
+      const value=element.getAttribute(attribute), previous=records.get(attribute);
+      const source=previous && value===previous.output?previous.source:value;
+      const output=language==='en'?translateText(source):source;
+      records.set(attribute,{source,output});
+      if(value!==output) element.setAttribute(attribute,output);
+    }
+  });
+  app.querySelectorAll('[data-language]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===language)));
+}
+function setLanguage(next){
+  if(next!=='ko' && next!=='en') return;
+  language=next;
+  try{localStorage.setItem(LANGUAGE_KEY,next);}catch{}
+  // Do not call render(): some existing screen renderers update state.
+  localizeScreen();
+}
+function mountLanguageControls(){
+  const controls=document.createElement('div');
+  controls.className='row language-controls';
+  controls.setAttribute('role','group');
+  controls.setAttribute('aria-label','한국어 / English');
+  for(const [code,label] of [['ko','한국어'],['en','English']]){
+    const button=document.createElement('button');
+    button.type='button';button.dataset.language=code;button.textContent=label;
+    button.onclick=()=>setLanguage(code);controls.appendChild(button);
+  }
+  if(S.screen==='start')app.prepend(controls);else app.appendChild(controls);
+}
+// Some controls update text without calling render (confirmation and contract toggles).
+const localizationObserver=new MutationObserver(()=>localizeScreen());
+localizationObserver.observe(app,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['alt','title','placeholder','aria-label']});
+
+
+render();
+</script>
+</body>
+</html>
